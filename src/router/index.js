@@ -26,47 +26,9 @@ export default route(function ({ store }) {
     history: createHistory(process.env.MODE === 'ssr' ? undefined : process.env.VUE_ROUTER_BASE)
   })
 
-  Router.beforeEach(async (to, from, next) => {
-    const app = to.meta.app
-    if (to.name === 'participantsRewards' || app === 'coinstr') {
-      next()
-      return
-    }
-    if (to.name === 'hashed') {
-      next({ name: 'wallet' })
-      return
-    }
-    const isAuthenticated = store.getters['profile/isLogged']
-
-    if (!isAuthenticated && to.name !== 'login') {
-      next({
-        name: 'login',
-        query: {
-          returnUrl: to.name,
-          returnQuery: JSON.stringify(to.query)
-        }
-      })
-      return
-    }
-    if (to.name === 'root' || to.name === 'home') {
-      next({ name: 'manageVaults' })
-    } else {
-      // Validation by Apps
-      const loginType = store.getters['profile/loginType']
-
-      if (app === 'nbv' && store.getters['profile/xpub'] === undefined) {
-        store.dispatch('profile/getXpub')
-        // next()
-      }
-
-      if (app === 'hcd' && loginType === 'polkadotjs') {
-        next({ name: 'nbv' })
-      // } else if ((app === 'nbv' || app === 'marketplaces') && loginType === 'hcd') {
-      } else if ((app === 'marketplaces') && loginType === 'hcd') {
-        next({ name: 'hcd' })
-      } else next()
-    }
-  })
+  // Router.beforeEach(async (to, from, next) => {
+  //   const app = to.meta.app
+  // })
 
   return Router
 })

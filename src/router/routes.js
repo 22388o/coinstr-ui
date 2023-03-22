@@ -1,26 +1,14 @@
 const routes = [
   {
-    // Login
-    path: '/login',
-    name: 'login',
-    component: () => import('pages/Login.vue')
-  },
-  {
     // COINSTR
     name: 'coinstr',
-    path: '/coinstr',
+    path: '',
     component: () => import('layouts/CoinstrLayout.vue'),
-    meta: {
-      app: 'coinstr'
-    },
     children: [
       {
-        name: 'coinstrPolicies',
+        name: 'policies',
         path: '',
-        component: () => import('pages/coinstr/PoliciesScreen.vue'),
-        meta: {
-          app: 'coinstr'
-        }
+        component: () => import('pages/coinstr/PoliciesScreen.vue')
       }
     ]
   },

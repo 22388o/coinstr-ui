@@ -36,7 +36,8 @@ import {
   computed,
   defineEmits
 } from 'vue'
-import { useNotifications } from '~/mixins/notifications'
+import { useNotifications } from '~/composables'
+
 // props
 const props = defineProps({
   user: {

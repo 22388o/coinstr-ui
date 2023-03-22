@@ -7,7 +7,7 @@
 import { onMounted, onBeforeUnmount, defineExpose, ref, defineEmits, defineProps, watch, toRef } from 'vue'
 import Blockly from 'blockly'
 import { javascriptGenerator } from 'blockly/javascript'
-import { useErrorHandler } from '~/mixins/errorHandler'
+import { useNotifications } from '~/composables'
 
 const emits = defineEmits([
   'onChangedPolicy'
@@ -25,18 +25,7 @@ const props = defineProps({
   }
 })
 
-// const { eligiblesKeys } = toRef(props)
-
-// watch(eligiblesKeys, function (v) {
-//   console.log('props.eligiblesKeys changed', v)
-//   Blockly.Blocks.key.generateOptions = function () {
-//     return v.map(option => {
-//       return [option.display_name, option.bitcoinAddress]
-//     })
-//   }
-// })
-
-const { handlerError } = useErrorHandler()
+const { handlerError } = useNotifications()
 
 javascriptGenerator.addReservedWords('code')
 Blockly.JavaScript = javascriptGenerator

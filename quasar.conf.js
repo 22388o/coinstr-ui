@@ -9,6 +9,7 @@
 /* eslint-env node */
 const ESLintPlugin = require('eslint-webpack-plugin')
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
 const { configure } = require('quasar/wrappers')
 const path = require('path')
@@ -57,18 +58,6 @@ module.exports = configure(function (ctx) {
       env: {
         ...require('dotenv').config().parsed,
         APP_NAME: process.env.APP_NAME,
-        WSS: process.env.WSS,
-        IPFS_URL: process.env.IPFS_URL,
-        IPFS_PROJECT_ID: process.env.IPFS_PROJECT_ID,
-        IPFS_PROJECT_SECRET: process.env.IPFS_PROJECT_SECRET,
-        PRIVATE_URI: process.env.PRIVATE_URI,
-        BDK_SERVICES_URL: process.env.BDK_SERVICES_URL,
-        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-        FAUCET_SERVER_URL: process.env.FAUCET_SERVER_URL,
-        GATED_PALLET_ID: process.env.GATED_PALLET_ID,
-        GATED_MARKETPLACE_ID: process.env.GATED_MARKETPLACE_ID,
-        AFLOAT_COLLECTION_ID: process.env.AFLOAT_COLLECTION_ID,
-        WSS_PARACHAIN: process.env.WSS_PARACHAIN,
         NDK_REST_URL: process.env.NDK_REST_URL
       },
       // transpile: false,
@@ -135,6 +124,19 @@ module.exports = configure(function (ctx) {
             }
           }
         })
+        // This cause the following warning "DeprecationWarning: chunk.files was changed from Array to Set (using Array property 'length' is deprecated)"
+        // Remove if generate broken issues
+        chain.plugin('uglify')
+          .use(UglifyJSPlugin, [{
+            uglifyOptions: {
+              compress: true,
+              mangle: true,
+              output: {
+                comments: false,
+                beautify: false
+              }
+            }
+          }])
         // chain.experiments = {
         //   ...chain.experiments,
 
@@ -215,8 +217,8 @@ module.exports = configure(function (ctx) {
       },
 
       manifest: {
-        name: 'Hashed Club - Members Only',
-        short_name: 'Hashed Club - Members Only',
+        name: 'COINSTR - Portal',
+        short_name: 'COINSTR - Portal',
         description: 'This is a template developed by HASHED',
         display: 'standalone',
         orientation: 'portrait',

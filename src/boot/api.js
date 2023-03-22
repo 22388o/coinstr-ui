@@ -1,5 +1,5 @@
 /* eslint-disable dot-notation */
-import { showGlobalLoading, hideGlobalLoading, showGlobalNotification } from '~/mixins/notifications'
+import { showGlobalLoading, hideGlobalLoading, showGlobalNotification } from '~/composables/useNotifications'
 import NostrApi from '~/services/NostrApi'
 
 export default async ({ app, store }) => {

@@ -1,8 +1,8 @@
 {
-  "name": "hashed-network-portal",
+  "name": "coinstr-portal",
   "version": "0.0.1",
-  "description": "Hashed Club - Members Only",
-  "productName": "Hashed Club - Members Only",
+  "description": "COINSTR - Portal",
+  "productName": "COINSTR - Portal",
   "author": "Jose Maria <josemgo.9.11@gmail.com",
   "private": true,
   "scripts": {
@@ -11,8 +11,7 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "prepare": "husky install",
-    "cypress:open": "cypress open",
-    "deploy": "node gh-pages-deploy.js"
+    "cypress:open": "cypress open"
   },
   "dependencies": {
     "@quasar/extras": "^1.14.2",
@@ -30,6 +29,7 @@
     "path": "^0.12.7",
     "process": "^0.11.10",
     "quasar": "^2.7.4",
+    "uglifyjs-webpack-plugin": "^2.2.0",
     "v-money3": "^3.22.3",
     "vue": "^3.0.0",
     "vue-i18n": "^9.2.0",

@@ -41,9 +41,7 @@ import {
   computed
 } from 'vue'
 import { useStore } from 'vuex'
-import { useNostr } from '~/composables'
-import { useNotifications } from '~/mixins/notifications'
-import { useErrorHandler } from '~/mixins/errorHandler'
+import { useNostr, useNotifications } from '~/composables'
 import { useQuasar } from 'quasar'
 import UserItem from '~/components/coinstr/user-item.vue'
 import NostrForm from '~/components/coinstr/nostr-form.vue'
@@ -52,8 +50,7 @@ const $q = useQuasar()
 
 const $store = useStore()
 
-const { showNotification, showLoading, hideLoading } = useNotifications()
-const { handlerError } = useErrorHandler()
+const { showNotification, showLoading, hideLoading, handlerError } = useNotifications()
 
 const {
   connectNostr, disconnectNostr,
