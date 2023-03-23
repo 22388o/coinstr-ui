@@ -8,9 +8,19 @@
         :eligiblesKeys="eligiblesContacts"
         :myPublicKey="myPublicKey"
       )
-      .box.full-width
-        .text-body2.text-bold Policy code:
-        .text-body2.text-weight-light {{ policy }}
+      .row.q-mt-sm
+        .box.col.q-px-sm
+          .text-body2.text-bold Policy code:
+          .text-body2.text-weight-light {{ policy }}
+        .row.justify-end.q-gutter-x-sm(v-if="isLoggedInNostr")
+            q-btn(
+              label="Save policy"
+              color="primary"
+            )
+            q-btn(
+              label="Load policy"
+              color="secondary"
+            )
     .col.q-pl-md
       template(v-if="isLoggedInNostr")
         .text-body2.text-bold Contacts:
