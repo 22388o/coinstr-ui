@@ -12,9 +12,11 @@
         .text-body2.text-bold Policy code:
         .text-body2.text-weight-light {{ policy }}
     .col.q-pl-md
-      template(v-if="contacts")
+      template(v-if="isLoggedInNostr")
         .text-body2.text-bold Contacts:
-        users-list(v-model="contacts")
+        users-list.list(v-model="contacts" :loading="contacts === undefined")
+      template(v-else)
+        .text-body2.text-center.q-mt-md Please Login with NOSTR account to see your contacts and add to Policy.
 </template>
 
 <script setup>
@@ -79,8 +81,11 @@ const eligiblesContacts = computed(() => {
 </script>
 
 <style lang="stylus" scoped>
-.box {
-    inline-size: 150px;
-    overflow-wrap: break-word;
-}
+.box
+  inline-size: 150px
+  overflow-wrap: break-word
+
+.list
+  height: 85vh
+  overflow-y: scroll
 </style>

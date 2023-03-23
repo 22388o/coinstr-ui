@@ -1,4 +1,4 @@
-# Hashed Portal
+# COINSTR Portal
 
 ## Quick Start
 ```bash
@@ -36,6 +36,3 @@ quasar build
 
 ### Customize the configuration
 See [Configuring quasar.conf.js](https://quasar.dev/quasar-cli/quasar-conf-js).
-
-# Userflow guide for NBV
-See [tutorial](https://github.com/hashed-io/hashed-network-portal-ui/blob/dev/docs/tutorials/native_bitcoin_vault_user_guide.md)

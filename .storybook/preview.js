@@ -15,18 +15,13 @@ import messages from '../src/i18n'
 // import myStore from '../src/store'
 // import messages from '../src/i18n'
 import { createStore } from 'vuex'
-import polkadotWallet from '../src/store/polkadotWallet'
-import notifications from '~/mixins/notifications'
-import errorHandler from '~/mixins/errorHandler'
 import { Notify, Loading } from 'quasar'
 
 import TInput from '~/components/common/input/t-input.vue'
 import HInput from '~/components/common/input/h-input.vue'
-import AccountInput from '~/components/common/account-input.vue'
 import MoneyInput from '~/components/common/input/money-input.vue'
 app.component('TInput', TInput)
 app.component('HInput', HInput)
-app.component('AccountInput', AccountInput)
 app.component('MoneyInput', MoneyInput)
 
 const store = createStore({
@@ -35,8 +30,8 @@ const store = createStore({
     profile: {
       namespaced: true,
       getters: {
-        polkadotAddress () {
-          return '5HeCZWDcdSrsV4YPVg9vDLBjV1nHDrzXb79UdA7DytiiZPVB'
+        test () {
+          return 'test'
         }
       }
     }
@@ -64,22 +59,6 @@ app.use(i18n)
 app.use(store)
 
 // API INSTANCES
-// import ConfidentialDocs from '~/services/confidential-docs/confidential-docs'
-import PolkadotApi from '~/services/polkadotApi.js'
-import { MarketplaceApi } from '~/services/polkadot-pallets'
-import { NbvStorageApi } from '@jmgayosso/nbv-client-api'
-const api = new PolkadotApi('wss://n1.main.hashed.systems')
-api.connect().then(() => {
-  const nbvStorageApi = new NbvStorageApi(api)
-  const marketplaceApi = new MarketplaceApi(api)
-  store['$polkadotApi'] = api
-  store['$nbvStorageApi'] = nbvStorageApi
-  store['$marketplaceApi'] = marketplaceApi
-})
-
-
-app.mixin(notifications)
-app.mixin(errorHandler)
 
 // const i18n = new VueI18n({
 //   locale: 'en-us',

@@ -35,7 +35,7 @@ q-card.full-width(flat bordered)
         q-btn(
           type="submit"
           label="Ok"
-          color="primary"
+          color="secondary"
           no-caps
         )
 </template>

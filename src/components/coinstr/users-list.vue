@@ -1,11 +1,25 @@
 <template lang='pug'>
-.wrapper
+#UsersListWrapper
   q-list(
-    v-if="Object.entries(_users).length > 0"
+    bordered
+    separator
+    v-if="loading"
+  )
+    q-item.full-width(v-for="n in 8")
+      q-item-section(avatar)
+        q-skeleton(type="QAvatar")
+      q-item-section(top no-wrap)
+        q-skeleton.q-mt-xs(bordered)
+        q-skeleton.q-mt-xs(bordered)
+      q-item-section
+        q-skeleton.q-mt-xs.full-width(type="QBtn")
+  q-list(
+    v-if="showList"
     bordered
     separator
   )
     user-item(
+      v-if="showList"
       v-for="user in _users"
       :user="user"
       interactive
@@ -18,7 +32,8 @@
 import {
   defineProps,
   defineEmits,
-  toRefs
+  toRefs,
+  computed
 } from 'vue'
 import UserItem from './user-item.vue'
 // props
@@ -26,9 +41,13 @@ const props = defineProps({
   modelValue: {
     type: [Object, Array],
     default: () => ({})
+  },
+  loading: {
+    type: Boolean,
+    default: () => false
   }
 })
-const { modelValue: _users } = toRefs(props)
+const { modelValue: _users, loading } = toRefs(props)
 
 // Emits
 const emits = defineEmits(['update:modelValue'])
@@ -43,6 +62,10 @@ function removeUserToPolicy (user) {
   _users.value[user.bitcoinAddress].isSelectable = false
   emits('update:modelValue', _users.value)
 }
+
+const showList = computed(() => {
+  if (!_users.value) return false
+  if (Object.entries(_users).length > 0 && loading.value === false) return true
+  return false
+})
 </script>
-<style lang='stylus' scoped>
-</style>
