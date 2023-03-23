@@ -2,28 +2,36 @@
 q-layout.containerLayout(container view="hHh lpR fFf")
     q-header
       q-toolbar
+        .row#brand.items-center
+          q-img.q-ml-md(
+            src="/images/coinstr-logo.png"
+            style="height: 50px; width: 50px"
+          )
+          .col.q-ml-sm
+            .text.text-bold Coinstr
+            .text Bitcoin multi-custody signature orchestation
         q-toolbar-title
-          q-item
-            q-item-section
-              q-item-label Policies
+          //- q-item
+          //-   q-item-section
+          //-     q-item-label Policies
         q-btn(
           v-if="!isLoggedIn"
-          color="primary"
+          color="secondary"
           @click="() => dialog = true"
           no-caps
         )
           .text-white Connect to Nostr
-        div(v-else)
-          .row.items-center.q-gutter-md
+        div.q-pa-xs(v-else)
+            //- .row.items-center.q-gutter-md
+            UserItem.cursor-pointer.text-white.no-padding(
+              :user="getUserInfo"
+            )
             .text-white.text-weight-bold connected to: {{ getCurrentRelay() }}
-            .row
-              UserItem.q-mx-md.cursor-pointer.text-white(
-                :user="getUserInfo"
-              )
-              q-menu(fit)
-                q-list
-                  q-item(clickable v-close-popup @click="onLogout")
-                    q-item-section Logout
+            q-menu(fit)
+              q-list
+                q-item(clickable v-close-popup @click="onLogout")
+                  q-item-section Logout
+      //- q-toolbar
     q-page-container
       .row.justify-center
         .col-12
