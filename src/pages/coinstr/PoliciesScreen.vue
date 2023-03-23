@@ -16,7 +16,7 @@
         .text-body2.text-bold Contacts:
         users-list.list(v-model="contacts" :loading="contacts === undefined")
       template(v-else)
-        .text-body2.text-center.q-mt-md Please Login with NOSTR account to see your contacts and add to Policy.
+        .text-body2.text-center.q-mt-md Please log in with your NOSTR account to see your contacts and add them to Policy.
 </template>
 
 <script setup>
