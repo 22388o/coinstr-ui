@@ -14,7 +14,7 @@
     .col.q-pl-md
       template(v-if="contacts")
         .text-body2.text-bold Contacts:
-        users-list(v-model="contacts")
+        users-list.list(v-model="contacts")
 </template>
 
 <script setup>
@@ -79,8 +79,11 @@ const eligiblesContacts = computed(() => {
 </script>
 
 <style lang="stylus" scoped>
-.box {
-    inline-size: 150px;
-    overflow-wrap: break-word;
-}
+.box
+  inline-size: 150px
+  overflow-wrap: break-word
+
+.list
+  height: 85vh
+  overflow-y: scroll
 </style>
