@@ -29,23 +29,6 @@ class NostrApi {
     this.relays = []
   }
 
-  // async connect () {
-  //   let relay
-  //   try {
-  //     relay = relayInit(this.relay)
-  //     relay.on('connect', () => {
-  //       console.log(`connected to ${relay.url}`)
-  //     })
-  //     relay.on('error', () => {
-  //       console.log(`failed to connect to ${relay.url}`)
-  //     })
-  //     await relay.connect()
-  //     this.relay = relay
-  //   } catch (error) {
-  //     throw new Error(`failed to connect to ${relay.url}`)
-  //   }
-  // }
-
   async connectPool ({ relays, hexPubKey }, subTrigger) {
     if (!relays) throw new Error('Provide relays to connect')
     const pool = new SimplePool()
@@ -90,6 +73,14 @@ class NostrApi {
         reject('Failed to get the metadata')
       })
     })
+  }
+
+  async encryptMessage ({ publicKey, message }) {
+    return Nip07.encryptMessage(publicKey, message)
+  }
+
+  async decryptMessage ({ publicKey, message }) {
+    return Nip07.decryptMessage(publicKey, message)
   }
 
   HexToNpub ({ publicKey }) {

@@ -1,3 +1,4 @@
+import nostr from 'src/store/nostr'
 import {
   computed
 } from 'vue'
@@ -82,6 +83,20 @@ export const useNostr = () => {
       console.error('Error fetching data:', error)
     }
   }
+
+  // Message Feature
+  const sendMessage = async ({ relay, publicKey, toPublickKey, message }) => {
+    const ciphertext = await nostrApi.encryptMessage({ publicKey, message: 'Hello from Coinstr 🪙' })
+    console.log({ ciphertext })
+    const event = {
+      kind: 4,
+      pubkey: publicKey,
+      tags: [['p', toPublickKey]],
+      content: ciphertext
+    }
+    console.log({ event })
+  }
+
   const isNpub = (key) => {
     const npubIdentifier = 'npub'
     return key?.substring(0, npubIdentifier.length) === npubIdentifier
@@ -139,6 +154,7 @@ export const useNostr = () => {
     NpubToHex,
     connectPool,
     getRelays,
-    setRelays
+    setRelays,
+    sendMessage
   }
 }
