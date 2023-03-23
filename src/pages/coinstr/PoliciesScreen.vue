@@ -92,7 +92,16 @@ function validatePolicy (code) {
 // Computed
 const eligiblesContacts = computed(() => {
   if (!contacts.value) return []
-  return Object.entries(contacts.value).map(v => v[1]).filter(user => user.isSelectable)
+  const _contacts = Object.entries(contacts.value).map(([pk, user]) => {
+    const label = user.display_name || user.name
+    const isSelectable = user.isSelectable
+    return {
+      label,
+      pk,
+      isSelectable
+    }
+  }).filter(user => user.isSelectable)
+  return _contacts
 })
 
 // Save and load policies

@@ -491,8 +491,8 @@ const loadBlockly = () => {
     generateOptions: function () {
       if (!props.eligiblesKeys || !props.eligiblesKeys.length === 0) return [['Please add contacts to policy', '']]
       const newOptions = props.eligiblesKeys?.map(option => {
-        const label = option.display_name || option.name
-        const pk = option.bitcoinAddress || ''
+        const label = option.label
+        const pk = option.pk
         return [label, pk]
       })
       if (newOptions.length >= 1) return newOptions
