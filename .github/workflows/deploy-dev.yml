@@ -45,7 +45,7 @@ jobs:
       - name: Build app
         run: quasar build
         env:
-          APP_NAME: 'Hashed Club - Members Only'
+          APP_NAME: 'COINSTR - Portal'
           WSS: 'wss://n1.main.hashed.systems'
           IPFS_URL: 'https://ipfs.infura.io:5001/'
           PRIVATE_URI: 'https://hp-dev.hashed.systems/v1/graphql'
