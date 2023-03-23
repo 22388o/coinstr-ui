@@ -3,7 +3,7 @@ q-layout.containerLayout(container view="hHh lpR fFf")
     q-header
       q-toolbar
         .row#brand.items-center
-          q-img.q-ml-md(
+          q-img.q-ml-md.q-my-xs(
             src="/images/coinstr-logo.png"
             style="height: 50px; width: 50px"
           )
