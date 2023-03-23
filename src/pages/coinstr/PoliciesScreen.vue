@@ -15,6 +15,8 @@
       template(v-if="isLoggedInNostr")
         .text-body2.text-bold Contacts:
         users-list.list(v-model="contacts" :loading="contacts === undefined")
+      template(v-else)
+        .text-body2.text-center.q-mt-md Please Login with NOSTR account to see your contacts and add to Policy.
 </template>
 
 <script setup>
