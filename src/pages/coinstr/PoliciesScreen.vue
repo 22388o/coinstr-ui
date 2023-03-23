@@ -12,9 +12,9 @@
         .text-body2.text-bold Policy code:
         .text-body2.text-weight-light {{ policy }}
     .col.q-pl-md
-      template(v-if="contacts")
+      template(v-if="isLoggedInNostr")
         .text-body2.text-bold Contacts:
-        users-list.list(v-model="contacts")
+        users-list.list(v-model="contacts" :loading="contacts === undefined")
 </template>
 
 <script setup>
