@@ -1,15 +1,15 @@
 <template lang="pug">
 q-layout.containerLayout(container view="hHh lpR fFf")
     q-header
-      q-toolbar.bg-black
+      q-toolbar
         .row#brand.items-center
           q-img.q-ml-md.q-my-xs(
             src="/images/coinstr-logo.png"
             style="height: 50px; width: 50px"
           )
           .col.q-ml-sm
-            .text.text-bold Coinstr
-            .text Bitcoin multi-custody signature orchestation
+            .text-dark.text-bold Coinstr
+            .text-dark Bitcoin multi-custody signature orchestation
         q-toolbar-title
           //- q-item
           //-   q-item-section
@@ -21,12 +21,12 @@ q-layout.containerLayout(container view="hHh lpR fFf")
           no-caps
         )
           .text-white Connect to Nostr
-        div.q-pa-xs(v-else)
+        div.q-pa-sm(v-else)
             //- .row.items-center.q-gutter-md
-            UserItem.cursor-pointer.text-white.no-padding(
+            UserItem.cursor-pointer.text-dark.no-padding(
               :user="getUserInfo"
             )
-            .text-white.text-weight-bold connected to: {{ getCurrentRelay() }}
+            .text-dark.text-weight-bold connected to: {{ getCurrentRelay() }}
             q-menu(fit)
               q-list
                 q-item(clickable v-close-popup @click="onLogout")
