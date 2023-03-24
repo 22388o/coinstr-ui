@@ -54,7 +54,8 @@ const emits = defineEmits(['update:modelValue'])
 
 // Methods by Feature
 function addUserToPolicy (user) {
-  _users.value[user.bitcoinAddress].isSelectable = true
+  // _users.value[user.bitcoinAddress].isSelectable = true
+  _users.value.find(v => v === user).isSelectable = true
   emits('update:modelValue', _users.value)
 }
 

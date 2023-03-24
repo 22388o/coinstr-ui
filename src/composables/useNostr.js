@@ -8,6 +8,14 @@ export const useNostr = () => {
   const $store = useStore()
   const nostrApi = $store.$nostrApi
 
+  /**
+   * @async
+   * @name connectNostr
+   * @description Connects to a Nostr account with the given public key.
+   * @param {Object} options - The options for connecting to the account.
+   * @param {string} options.publicKey - The public key for the account.
+   * @returns {Promise<Object>} - An object containing the public key and npub key for the account.
+   */
   const connectNostr = async ({ publicKey }) => {
     let response
     if (publicKey && isNpub(publicKey)) {
@@ -19,10 +27,24 @@ export const useNostr = () => {
     return { pubkey, npubKey }
   }
 
+  /**
+   * @async
+   * @name disconnectNostr
+   * @description Disconnects from the active Nostr account.
+   */
   const disconnectNostr = async () => {
     $store.commit('nostr/clearNostrAccount')
     $store.commit('nostr/updateRelays', [])
   }
+
+  /**
+   * @async
+   * @name getProfileMetadata
+   * @description Gets the profile metadata for a Nostr account with the given public key.
+   * @param {Object} options - The options for getting the profile metadata.
+   * @param {string} options.publicKey - The public key for the account.
+   * @returns {Promise<Object>} - An object containing the content and tags for the profile.
+   */
   const getProfileMetadata = async ({ pubkey }) => {
     const { content, tags } = await nostrApi.getProfileMetadata({ publicKey: pubkey })
     if (!content) {
@@ -32,9 +54,23 @@ export const useNostr = () => {
     return { content, tags }
   }
 
+  /**
+   * @name setNostrAccount
+   * @description Sets the active Nostr account with the given hex, npub, and tags.
+   * @param {Object} options - The options for setting the active account.
+   * @param {string} options.hex - The hex representation of the account.
+   * @param {string} options.npub - The npub key for the account.
+   * @param {Array} options.tags - The tags for the account.
+   */
   const setNostrAccount = ({ hex, npub, tags }) => {
     $store.commit('nostr/setNostrAccount', { hex, npub, tags })
   }
+
+  /**
+   * @name updateNostrAccount
+   * @description Updates the active Nostr account with the given object.
+   * @param {Object} obj - The object containing the updates to the account.
+   */
   const updateNostrAccount = (obj) => {
     const currentAccount = $store.getters['nostr/getActiveAccount']
     const rawCurrentAccount = JSON.parse(JSON.stringify(currentAccount))
@@ -50,6 +86,14 @@ export const useNostr = () => {
     $store.commit('nostr/updateNostrAccount', obj)
   }
 
+  /**
+   * @async
+   * @name getContacts
+   * @description Gets the contacts for a Nostr account with the given public key.
+   * @param {Object} options - The options for getting the contacts.
+   * @param {string} options.publicKey - The public key for the account.
+   * @returns {Promise<Array>} - An array of contact objects.
+   */
   const getContacts = async ({ publicKey }) => {
     let relays = getRelays()
     relays = relays.map(relay => encodeURIComponent(relay))
@@ -87,6 +131,12 @@ export const useNostr = () => {
     return key?.substring(0, npubIdentifier.length) === npubIdentifier
   }
 
+  /**
+   * @name HexToNpub
+   * @description Converts a hex string to an npub key.
+   * @param {string} hex - The hex string to convert.
+   * @returns {string} - The npub key.
+   */
   const HexToNpub = (hex) => {
     const npubIdentifier = 'npub'
     if (!hex) return
@@ -94,6 +144,12 @@ export const useNostr = () => {
     nostrApi.HexToNpub({ publicKey: hex })
   }
 
+  /**
+   * @name NpubToHex
+   * @description Converts an npub key to a hex string.
+   * @param {string} npub - The npub key to convert.
+   * @returns {string} - The hex string.
+   */
   const NpubToHex = (npub) => {
     const npubIdentifier = 'npub'
     if (!npub) return
@@ -102,16 +158,53 @@ export const useNostr = () => {
     }
   }
 
+  /**
+   * @computed extensionIsAvailable
+   * @description A computed property that returns true if the Nostr extension is available, otherwise false.
+   * @type {boolean}
+   */
   const extensionIsAvailable = computed(() => { return !!window.nostr })
 
+  /**
+   * @computed isLoggedIn
+   * @description A computed property that returns true if the user is logged in to Nostr, otherwise false.
+   * @type {boolean}
+   */
   const isLoggedIn = computed(() => $store.getters['nostr/isLoggedInNostr'])
+
+  /**
+   * @computed getActiveAccount
+   * @description A computed property that returns the active Nostr account.
+   * @type {Object}
+   */
   const getActiveAccount = computed(() => $store.getters['nostr/getActiveAccount'])
 
+  /**
+   * @name getRelays
+   * @description Gets the relays for the active Nostr account.
+   * @returns {Array} - An array of relay strings.
+   */
   const getRelays = () => $store.getters['nostr/getRelays']
+
+  /**
+   * @name setRelays
+   * @description Sets the relays for the active Nostr account.
+   * @param {Object} options - The options for setting the relays.
+   * @param {Array} options.relays - The relay strings to set.
+   */
   const setRelays = ({ relays }) => $store.commit('nostr/updateRelays', relays)
 
+  /**
+   * @name clearRelays
+   * @description Clears the relays for the active Nostr account.
+   */
   const clearRelays = () => nostrApi.clearRelays()
 
+  /**
+   * @async
+   * @name connectPool
+   * @description Connects to a Nostr pool with the given relays and public key.
+   */
   const connectPool = async ({ relays, hexPubKey }, subTrigger) => {
     return nostrApi.connectPool({ relays, hexPubKey }, subTrigger)
   }
@@ -122,7 +215,8 @@ export const useNostr = () => {
         contactsProcessed[key] = contact[key]
       }
     })
-    return contactsProcessed
+    if (!contactsProcessed || contactsProcessed === {}) return []
+    return Object.entries(contactsProcessed).map(v => v[1])
   }
   return {
     connectNostr,
