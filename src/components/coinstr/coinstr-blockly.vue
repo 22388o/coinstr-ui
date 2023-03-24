@@ -373,7 +373,7 @@ const loadBlockly = () => {
       }
     )
   } catch (e) {
-    console.warn(e)
+    console.warn('allow_chain_in_thresh is already registered')
   }
 
   // Set AND custom block

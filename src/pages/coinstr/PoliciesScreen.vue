@@ -2,12 +2,14 @@
 #PoliciesScreen
   .row
     .col-8
-      coinstr-blockly(
-        ref="blocklyRef"
-        @onChangedPolicy="validatePolicy"
-        :eligiblesKeys="eligiblesContacts"
-        :myPublicKey="myPublicKey"
-      )
+      #template
+        .text-body2.text-bold Policy creator:
+        coinstr-blockly(
+          ref="blocklyRef"
+          @onChangedPolicy="validatePolicy"
+          :eligiblesKeys="eligiblesContacts"
+          :myPublicKey="myPublicKey"
+        )
       .row.q-mt-sm
         .box.col.q-pr-sm
           .text-body2.text-bold Policy code:
@@ -26,7 +28,15 @@
     .col.q-pl-md
       template(v-if="isLoggedInNostr")
         .text-body2.text-bold Contacts:
-        users-list.list(v-model="contacts" :loading="contacts === undefined")
+        q-input.q-mb-sm(
+          placeholder="Search"
+          dense
+          v-model="searchContacts"
+          debounce="100"
+          clearable
+          clear-icon="close"
+        )
+        users-list.list(v-model="contacts" :loading="contacts === undefined" :search="searchContacts")
       template(v-else)
         .text-body2.text-center.q-mt-md Please log in with your NOSTR account to see your contacts and add them to Policy.
 </template>
@@ -55,6 +65,9 @@ const contacts = ref(undefined)
 
 const isLoggedInNostr = computed(() => $store.getters['nostr/isLoggedInNostr'])
 const myPublicKey = ref(undefined)
+
+// Search contacts
+const searchContacts = ref(undefined)
 
 watch(isLoggedInNostr, function (v) {
   try {
@@ -179,6 +192,6 @@ function loadPolicy () {
   overflow-wrap: break-word
 
 .list
-  height: 85vh
+  height: 80vh
   overflow-y: scroll
 </style>
