@@ -8,25 +8,25 @@ q-layout.containerLayout(container view="hHh lpR fFf")
             style="height: 50px; width: 50px"
           )
           .col.q-ml-sm
-            .text.text-bold Coinstr
-            .text Bitcoin multi-custody signature orchestation
+            .text-dark.text-bold Coinstr
+            .text-dark Bitcoin multi-custody signature orchestation
         q-toolbar-title
           //- q-item
           //-   q-item-section
           //-     q-item-label Policies
-        q-btn(
+        q-btn.bg-nostr(
           v-if="!isLoggedIn"
-          color="secondary"
+          color="nostr"
           @click="() => dialog = true"
           no-caps
         )
           .text-white Connect to Nostr
-        div.q-pa-xs(v-else)
+        div.q-pa-sm(v-else)
             //- .row.items-center.q-gutter-md
-            UserItem.cursor-pointer.text-white.no-padding(
+            UserItem.cursor-pointer.text-dark.no-padding(
               :user="getUserInfo"
             )
-            .text-white.text-weight-bold connected to: {{ getCurrentRelay() }}
+            .text-dark.text-weight-bold connected to: {{ getCurrentRelay() }}
             q-menu(fit)
               q-list
                 q-item(clickable v-close-popup @click="onLogout")
@@ -122,7 +122,7 @@ const onLogout = () => {
 }
 const getCurrentRelay = () => {
   // const { url } = currentRelay() || {}
-  return 'wss://lorem.ipsum'
+  return 'wss://relay.rip'
 }
 // -
 </script>
