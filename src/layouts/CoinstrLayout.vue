@@ -122,7 +122,7 @@ const onLogout = () => {
 }
 const getCurrentRelay = () => {
   // const { url } = currentRelay() || {}
-  return 'wss://lorem.ipsum'
+  return 'wss://relay.rip'
 }
 // -
 </script>
