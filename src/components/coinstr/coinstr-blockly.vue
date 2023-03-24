@@ -576,5 +576,5 @@ defineExpose({
 <style lang="stylus" scoped>
 #blocklyContainer
   width: 100%
-  height: 80vh
+  height: 78vh
 </style>

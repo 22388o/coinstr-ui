@@ -80,17 +80,18 @@ onMounted(() => {
  * @returns {Promise<void>}
  */
 async function loadContacts () {
-  const pubKey = $store.getters['nostr/getActiveAccount']
-  if (isLoggedInNostr.value) {
-    myPublicKey.value = pubKey.hex
-    const data = await getContacts({ publicKey: pubKey.hex })
-    contacts.value = data
-  } else contacts.value = undefined
-}
-
-function generateCode () {
-  const result = blocklyRef.value.generateCode()
-  policy.value = result
+  try {
+    contacts.value = undefined
+    const pubKey = $store.getters['nostr/getActiveAccount']
+    if (isLoggedInNostr.value) {
+      myPublicKey.value = pubKey.hex
+      const data = await getContacts({ publicKey: pubKey.hex })
+      contacts.value = data
+    } else contacts.value = undefined
+  } catch (e) {
+    handlerError(e)
+    console.error(e)
+  }
 }
 
 function validatePolicy (code) {

@@ -1,4 +1,4 @@
-import { Notify, QSpinnerFacebook, Loading, QSpinnerPuff, debounce } from 'quasar'
+import { Notify, QSpinnerFacebook, Loading, QSpinnerPuff, debounce, QSpinnerDots } from 'quasar'
 import { mapErrors } from '~/const/HashedErrors'
 
 export const showGlobalNotification = ({ message, color = 'accent', icon = 'done' }) => {
@@ -50,7 +50,7 @@ const handlerError = (error) => {
  */
 export const showGlobalLoading = (props) => {
   let message, color, background, type
-  const defaultMessage = 'Retrieving data...'
+  const defaultMessage = 'Please wait a moment'
   const defaultColor = 'white'
   const defaultBackground = 'black'
   const defaultType = 'loading'
@@ -71,31 +71,31 @@ export const showGlobalLoading = (props) => {
   let spinner
   switch (type) {
   case 'loading':
-    spinner = QSpinnerPuff
+    spinner = QSpinnerDots
     break
   case 'listening':
     // spinner = QSpinnerFacebook
     spinner = QSpinnerFacebook
     break
   default:
-    spinner = QSpinnerFacebook
+    spinner = QSpinnerPuff
   }
 
   // <img src="/icons/proxy-logo.png" style="width: 40px; height: 40px;" class="absolute-center"/>
-  const htmlMessage = `<div>
-    <div style="height: 250px;">
-      <lottie-player src="/animations/proxy-loading.json"  background="transparent"  speed="1"  style="width: 350px; height: 350px;" class="absolute-center"  loop autoplay />
-    </div>
-    <div class="text-h5 text-white bg-dark-gradient">${message}</div>
-  </div>`
+  // const htmlMessage = `<div>
+  //   <div style="height: 250px;">
+  //     <lottie-player src="/animations/proxy-loading.json"  background="transparent"  speed="1"  style="width: 350px; height: 350px;" class="absolute-center"  loop autoplay />
+  //   </div>
+  //   <div class="text-h5 text-white bg-dark-gradient">${message}</div>
+  // </div>`
 
   Loading.show({
     spinner,
     // spinnerColor: color,
-    spinnerSize: 0,
+    // spinnerSize: 0,
     backgroundColor: background,
-    // message: `<div class="text-h5">${message}</div>`,
-    message: htmlMessage,
+    message: `<div class="text-h5">${message}</div>`,
+    // message: htmlMessage,
     messageColor: color,
     html: true
   })
