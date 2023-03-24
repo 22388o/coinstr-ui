@@ -1,7 +1,7 @@
 <template lang="pug">
 q-layout.containerLayout(container view="hHh lpR fFf")
     q-header
-      q-toolbar
+      q-toolbar.bg-black
         .row#brand.items-center
           q-img.q-ml-md.q-my-xs(
             src="/images/coinstr-logo.png"
@@ -14,9 +14,9 @@ q-layout.containerLayout(container view="hHh lpR fFf")
           //- q-item
           //-   q-item-section
           //-     q-item-label Policies
-        q-btn(
+        q-btn.bg-nostr(
           v-if="!isLoggedIn"
-          color="secondary"
+          color="nostr"
           @click="() => dialog = true"
           no-caps
         )
