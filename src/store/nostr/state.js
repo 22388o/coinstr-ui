@@ -3,6 +3,7 @@ export default function () {
     publicKey: undefined,
     privateKey: undefined,
     account: {},
-    relays: []
+    relays: [],
+    ownMessages: []
   }
 }

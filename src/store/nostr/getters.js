@@ -7,3 +7,7 @@ export function getRelays ({ relays }) {
 export function isLoggedInNostr ({ account }) {
   return Object.keys(account).length !== 0
 }
+
+export function getOwnMessages ({ ownMessages }) {
+  return ownMessages
+}

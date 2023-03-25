@@ -43,6 +43,7 @@ class NostrApi {
       ]
     )
     this.relays = [...relays]
+    this.pool = pool
     sub.on('event', event => {
       subTrigger(event)
     })
@@ -76,11 +77,69 @@ class NostrApi {
   }
 
   async encryptMessage ({ publicKey, message }) {
-    return Nip07.encryptMessage(publicKey, message)
+    return Nip07.encrypt(publicKey, message)
+  }
+
+  async sendMessage ({ from, to, ciphertext }, subTrigger) {
+    try {
+      const { hex } = from || {}
+
+      const event = {
+        pubkey: hex,
+        kind: EventKind.DM,
+        tags: [['p', to]],
+        content: ciphertext,
+        created_at: Math.floor(Date.now() / 1000)
+      }
+
+      event.id = getEventHash(event)
+      const { sig } = await Nip07.signEvent(event)
+      event.sig = sig
+      const pubs = this.pool.publish(this.relays, event)
+      pubs.on('ok', (response) => {
+        // this may be called multiple times, once for every relay that accepts the event
+        console.log('ok', response)
+        subTrigger(response)
+      })
+      pubs.on('failed', reason => {
+        console.log(`failed to publish: ${reason}`)
+      })
+      return pubs
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  async getMessages ({ hexPublicKey }, subTrigger) {
+    try {
+      const event = {
+        kinds: [EventKind.DM],
+        authors: [hexPublicKey]
+      }
+
+      const messages = await this.pool.list(this.relays, [event])
+
+      return { messages }
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  async subscriptionToMessages ({ hexPublicKey }, subTrigger) {
+    const event = {
+      kinds: [EventKind.DM],
+      authors: [hexPublicKey]
+    }
+    const sub = this.pool.sub(this.relays, [event])
+    sub.on('event', event => {
+      subTrigger(event)
+    })
+    return sub
   }
 
   async decryptMessage ({ publicKey, message }) {
-    return Nip07.decryptMessage(publicKey, message)
+    const response = await Nip07.decrypt(publicKey, message)
+    return response
   }
 
   HexToNpub ({ publicKey }) {

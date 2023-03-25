@@ -67,10 +67,11 @@ const form = reactive({
     {
       value:
       'wss://relay.rip'
-    }, {
-      value:
-      'wss://relay.snort.social'
     }
+    // {
+    //   value:
+    //   'wss://relay.snort.social'
+    // }
   ],
   address: 'npub1aff8upvht8fk3f2j2vnsg48936wkunlzaxxnqttwqxppl2tnykwsahwngp'
 })

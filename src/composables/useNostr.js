@@ -85,18 +85,82 @@ export const useNostr = () => {
   }
 
   // Message Feature
-  const sendMessage = async ({ relay, publicKey, toPublickKey, message }) => {
-    const ciphertext = await nostrApi.encryptMessage({ publicKey, message: 'Hello from Coinstr 🪙' })
-    console.log({ ciphertext })
-    const event = {
-      kind: 4,
-      pubkey: publicKey,
-      tags: [['p', toPublickKey]],
-      content: ciphertext
-    }
-    console.log({ event })
+
+  /** Sends an encrypted message to a recipient specified by their public key
+    @async
+    @function sendMessage
+    @param {Object} messageData - The message data object
+    @param {string} messageData.toPublicKey - The recipient's public key in string format (NPUB)
+    @param {string} messageData.message - The message to be encrypted and sent
+    @param {string} subTrigger - The sub-trigger parameter for the sendMessage API
+    @returns {Promise<string>} - A promise that resolves to the publication identifier(s) of the sent message(s)
+    @throws {Error} - If the active account is not set
+*/
+  const sendMessage = async ({ toPublickKey, message }, subTrigger) => {
+    const { hex, npub } = getActiveAccount.value
+
+    const { data: toHexKey } = NpubToHex(toPublickKey)
+
+    const _message = createMessage({ app: 'coinstr', type: 'policy', data: message })
+    const ciphertext = await nostrApi.encryptMessage({ publicKey: toHexKey, message: _message })
+
+    const pubs = await nostrApi.sendMessage({
+      from: { hex, npub },
+      to: toHexKey,
+      ciphertext
+    }, subTrigger)
+
+    return pubs
   }
 
+  const getMessages = async ({ hexPublicKey }, subTrigger) => {
+    return nostrApi.getMessages({ hexPublicKey }, subTrigger)
+  }
+  const subscriptionToMessages = async ({ hexPublicKey }, subTrigger) => {
+    return nostrApi.subscriptionToMessages({ hexPublicKey }, subTrigger)
+  }
+  const createMessage = ({ app, type, data }) => {
+    const metadata = {
+      app,
+      type,
+      message: JSON.stringify(data)
+    }
+
+    let metadataString = ''
+    for (const [key, value] of Object.entries(metadata)) {
+      metadataString += `#${encodeURIComponent(key)}:${encodeURIComponent(value)}`
+    }
+
+    return metadataString
+  }
+
+  const getMetadataFromString = (metadataString) => {
+    if (!metadataString && metadataString === '') return undefined
+
+    const metadata = {}
+
+    const parts = metadataString?.split('#')
+    const _parts = parts?.filter(part => part !== '')
+
+    if (!_parts || _parts.length === 0) return undefined
+
+    _parts.forEach(part => {
+      const [key, value] = part?.split(':')
+      try {
+        metadata[decodeURIComponent(key)] = decodeURIComponent(value)
+      } catch (e) {
+        return undefined
+      }
+    })
+
+    try {
+      metadata.message = JSON.parse(metadata.message)
+    } catch (e) {
+      return undefined
+    }
+
+    return metadata
+  }
   const isNpub = (key) => {
     const npubIdentifier = 'npub'
     return key?.substring(0, npubIdentifier.length) === npubIdentifier
@@ -106,17 +170,22 @@ export const useNostr = () => {
     const npubIdentifier = 'npub'
     if (!hex) return
     if (hex?.substring(0, npubIdentifier.length) === npubIdentifier) return hex
-    nostrApi.HexToNpub({ publicKey: hex })
+    return nostrApi.HexToNpub({ publicKey: hex })
   }
 
   const NpubToHex = (npub) => {
     const npubIdentifier = 'npub'
     if (!npub) return
     if (npub?.substring(0, npubIdentifier.length) === npubIdentifier) {
-      nostrApi.NpubToHex({ publicKey: npub })
+      return nostrApi.NpubToHex({ publicKey: npub })
     }
   }
 
+  const decryptMessage = async ({ message }) => {
+    const publicKey = getActiveAccount.value.hex
+    const plainText = await nostrApi.decryptMessage({ publicKey, message })
+    return getMetadataFromString(plainText) || plainText
+  }
   const extensionIsAvailable = computed(() => { return !!window.nostr })
 
   const isLoggedIn = computed(() => $store.getters['nostr/isLoggedInNostr'])
@@ -127,6 +196,7 @@ export const useNostr = () => {
 
   const clearRelays = () => nostrApi.clearRelays()
 
+  const addOwnMessage = ({ message }) => $store.commit('nostr/addOwnMessage', message)
   const connectPool = async ({ relays, hexPubKey }, subTrigger) => {
     return nostrApi.connectPool({ relays, hexPubKey }, subTrigger)
   }
@@ -155,6 +225,10 @@ export const useNostr = () => {
     connectPool,
     getRelays,
     setRelays,
-    sendMessage
+    sendMessage,
+    getMessages,
+    subscriptionToMessages,
+    decryptMessage,
+    addOwnMessage
   }
 }

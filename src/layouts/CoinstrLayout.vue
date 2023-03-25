@@ -118,6 +118,7 @@ const getUserInfo = computed(() => {
 })
 const onLogout = () => {
   unsubscribe()
+  $store.commit('nostr/clearOwnMessages')
   disconnectNostr()
 }
 const getCurrentRelay = () => {
