@@ -113,12 +113,30 @@ export const useNostr = () => {
     return pubs
   }
 
+  /**
+   * Get messages from Nostr Relay
+   * @param {Object} params
+   * @param {string} params.hexPublicKey - Hex public key.
+   * @param {Object} subTrigger - Sub trigger.
+   * @returns {Promise<Object>} Promise with messages.
+   */
   const getMessages = async ({ hexPublicKey }, subTrigger) => {
     return nostrApi.getMessages({ hexPublicKey }, subTrigger)
   }
   const subscriptionToMessages = async ({ hexPublicKey }, subTrigger) => {
     return nostrApi.subscriptionToMessages({ hexPublicKey }, subTrigger)
   }
+
+  /**
+   * Create a metadata string [Message to send] from the given data.
+   *
+   * @param {object} options - The options object.
+   * @param {string} options.app - The name of the app. [Coinstr]
+   * @param {string} options.type - The type of the message. [Policy]
+   * @param {object} options.data - The data to include in the message.
+   *
+   * @returns {string} The metadata string.
+   */
   const createMessage = ({ app, type, data }) => {
     const metadata = {
       app,
@@ -133,7 +151,30 @@ export const useNostr = () => {
 
     return metadataString
   }
-
+  /**
+   * Decrypts a message using the active account's public key and returns the metadata as an object.
+   * If decryption fails, returns the plaintext message instead.
+   *
+   * @async
+   * @function
+   *
+   * @param {object} options - The options object.
+   * @param {string} options.message - The message to decrypt.
+   *
+   * @returns {Promise<object|string>} A promise that resolves to an object containing the message's metadata key-value pairs, or to the plaintext message if decryption failed.
+   */
+  const decryptMessage = async ({ message }) => {
+    const publicKey = getActiveAccount.value.hex
+    const plainText = await nostrApi.decryptMessage({ publicKey, message })
+    return getMetadataFromString(plainText) || plainText
+  }
+  /**
+   * Parses a metadata string and returns an object with key-value pairs.
+   *
+   * @param {string} metadataString - The metadata string to parse.
+   *
+   * @returns {object|undefined} An object containing the metadata key-value pairs, or undefined if parsing failed.
+   */
   const getMetadataFromString = (metadataString) => {
     if (!metadataString && metadataString === '') return undefined
 
@@ -181,11 +222,6 @@ export const useNostr = () => {
     }
   }
 
-  const decryptMessage = async ({ message }) => {
-    const publicKey = getActiveAccount.value.hex
-    const plainText = await nostrApi.decryptMessage({ publicKey, message })
-    return getMetadataFromString(plainText) || plainText
-  }
   const extensionIsAvailable = computed(() => { return !!window.nostr })
 
   const isLoggedIn = computed(() => $store.getters['nostr/isLoggedInNostr'])
