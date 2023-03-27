@@ -106,9 +106,15 @@ async function getMessagesFromAccount ({ hexPublicKey }) {
 
     for (const msg of messagesFiltered) {
       const { content } = msg || {}
-      const plainText = await decryptMessage({ message: content })
-      msg.plainText = plainText
-      addOwnMessage({ message: msg })
+      let plainText = null
+      try {
+        plainText = await decryptMessage({ message: content })
+        msg.plainText = plainText
+        console.log({ msg })
+        addOwnMessage({ message: msg })
+      } catch (e) {
+        console.error(e)
+      }
     }
     messageSubscriptions = await subscriptionToMessages({ hexPublicKey }, newMessage)
   } catch (error) {
