@@ -4,6 +4,11 @@
 export default {
   failed: 'Action failed',
   success: 'Action was successful',
+  forms: {
+    errors: {
+      isValidRelay: 'The relay is not valid'
+    }
+  },
   lang: {
     'en-US': 'English',
     'es-MEX': 'Spanish'
