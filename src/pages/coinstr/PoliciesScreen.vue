@@ -50,7 +50,13 @@ import { useStore } from 'vuex'
 
 const $store = useStore()
 const {
-  getContacts
+  getContacts,
+  sendMessage,
+  getMessages,
+  getActiveAccount,
+  decryptMessage,
+  addOwnMessage,
+  subscriptionToMessages
 } = useNostr()
 
 const {
@@ -62,27 +68,26 @@ const {
 const blocklyRef = ref(undefined)
 const policy = ref(undefined)
 const contacts = ref(undefined)
+const searchContacts = ref(undefined)
 
 const isLoggedInNostr = computed(() => $store.getters['nostr/isLoggedInNostr'])
 const myPublicKey = ref(undefined)
+let messageSubscriptions
 
-// Search contacts
-const searchContacts = ref(undefined)
-
-watch(isLoggedInNostr, function (v) {
+watch(isLoggedInNostr, async function (v) {
   try {
     loadContacts()
+    await getMessagesFromAccount({ hexPublicKey: getActiveAccount.value.hex })
   } catch (e) {
     console.error(e)
   }
 })
 
-onMounted(() => {
+onMounted(async () => {
   try {
     loadContacts()
   } catch (e) {
     console.error(e)
-    handlerError(e)
   }
 })
 
@@ -92,6 +97,52 @@ onMounted(() => {
  * @description Loads contacts for the currently active account.
  * @returns {Promise<void>}
  */
+const currentOwnMessages = computed(() => $store.getters['nostr/getOwnMessages'])
+const newMessages = []
+
+async function newMessage (message) {
+  const toAccount = message?.tags?.[0]?.[1]
+
+  if (toAccount !== getActiveAccount.value.hex) return
+
+  const found = currentOwnMessages.value.find(msg => {
+    return msg?.id === message?.id
+  })
+
+  if (found) return
+  if (!message?.content) return
+
+  const plainText = await decryptMessage({ message: message.content })
+  message.plainText = plainText
+
+  addOwnMessage({ message })
+}
+async function getMessagesFromAccount ({ hexPublicKey }) {
+  try {
+    const { messages } = await getMessages({ hexPublicKey }, newMessage)
+
+    if (!messages || !messages?.length === 0) return
+
+    // Messages filtered by current Account
+    const messagesFiltered = messages.filter(msg => msg?.tags[0][1] === getActiveAccount.value.hex)
+
+    for (const msg of messagesFiltered) {
+      const { content } = msg || {}
+      let plainText = null
+      try {
+        plainText = await decryptMessage({ message: content })
+        msg.plainText = plainText
+        console.log({ msg })
+        addOwnMessage({ message: msg })
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    messageSubscriptions = await subscriptionToMessages({ hexPublicKey }, newMessage)
+  } catch (error) {
+    console.error(error)
+  }
+}
 async function loadContacts () {
   try {
     contacts.value = undefined
@@ -109,6 +160,21 @@ async function loadContacts () {
 
 function validatePolicy (code) {
   policy.value = code
+}
+
+async function onSavePolicy () {
+  const message = { xml: 'xml_code', policyCode: policy.value, keys: [getActiveAccount.value.npub] }
+
+  const { npub } = getActiveAccount.value || {}
+  const toPublickKey = npub
+
+  if (!message || !toPublickKey) return
+
+  const pubs = await sendMessage({ message, toPublickKey }, onSuccessPublish)
+}
+
+function onSuccessPublish (response) {
+  console.log({ response })
 }
 
 // Computed

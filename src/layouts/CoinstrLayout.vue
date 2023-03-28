@@ -25,9 +25,15 @@ q-layout.containerLayout(container view="hHh lpR fFf")
             //- .row.items-center.q-gutter-md
             UserItem.cursor-pointer.text-dark.no-padding(
               :user="getUserInfo"
+              id="user-item"
             )
-            .text-dark.text-weight-bold connected to: {{ getCurrentRelay() }}
-            q-menu(fit)
+            .text-white.text-weight-bold.cursor-pointer(id="relay-list") connected to: {{ getRelays().length }} relays
+              q-menu(fit target="#relay-list")
+                q-list(:style="{width: '300px'}")
+                  q-item(v-for="relay in getRelays()" :key="relay")
+                    q-item-section {{ relay.substring('wss://'.length) }}
+
+            q-menu(fit target="#user-item")
               q-list
                 q-item(clickable v-close-popup @click="onLogout")
                   q-item-section Logout
@@ -73,6 +79,7 @@ const {
 const relayInput = ref(undefined)
 
 const dialog = ref(false)
+
 let unsubscribe
 
 const onLoginNostr = async ({ type, relays, address }) => {
@@ -87,7 +94,8 @@ const onLoginNostr = async ({ type, relays, address }) => {
 
     setNostrAccount({ hex: pubkey, npub: npubKey })
 
-    showNotification({ message: `Connected to ${getCurrentRelay()}`, color: 'green' })
+    const numberOfRelays = getRelays()
+    showNotification({ message: `Connected to ${numberOfRelays.length} relays`, color: 'green' })
   } catch (error) {
     handlerError(error)
   } finally {
@@ -118,12 +126,14 @@ const getUserInfo = computed(() => {
 })
 const onLogout = () => {
   unsubscribe()
+  $store.commit('nostr/clearOwnMessages')
   disconnectNostr()
 }
 const getCurrentRelay = () => {
   // const { url } = currentRelay() || {}
   return 'wss://relay.rip'
 }
+
 // -
 </script>
 
