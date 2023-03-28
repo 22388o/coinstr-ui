@@ -25,3 +25,10 @@ export function updateNostrAccount (state, dataObj) {
 export function updateRelays (state, relays) {
   state.relays = [...relays]
 }
+
+export function addOwnMessage (state, message) {
+  state.ownMessages.push(message)
+}
+export function clearOwnMessages (state) {
+  state.ownMessages = []
+}

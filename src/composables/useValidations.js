@@ -30,7 +30,8 @@ export const useValidations = () => {
     notOwnAccount: value => val => !(value === val) || t('forms.errors.notOwnAccount'),
     isGreaterThanDate: value => val => new Date(val) > new Date(value) || t('forms.errors.isGreaterThanDate', { value }),
     isInflationNumber: val => /^\s?\d*\.?\d*$/.test(val) || t('forms.errors.isInflationNumber', { value: val }),
-    isNaicsCode: val => /^\d+((,|\s|,\s)\d+)*$/.test(val) || t('forms.errors.isNaicsCode')
+    isNaicsCode: val => /^\d+((,|\s|,\s)\d+)*$/.test(val) || t('forms.errors.isNaicsCode'),
+    isValidRelay: val => /([\w-]+\.)*[\w-]+(\.[\w-]+){1,3}\/?$/.test(val) || t('forms.errors.isValidRelay')
   })
 
   const validate = async (form) => {

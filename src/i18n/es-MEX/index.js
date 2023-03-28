@@ -4,6 +4,11 @@
 export default {
   failed: 'La acción a fallida',
   success: 'La acción tuvo éxito',
+  form: {
+    errors: {
+      isValidRelay: 'El relay no es válido'
+    }
+  },
   lang: {
     'en-US': 'Ingles',
     'es-MEX': 'Español'
