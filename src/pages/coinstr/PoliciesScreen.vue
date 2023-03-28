@@ -120,7 +120,7 @@ async function newMessage (message) {
 async function getMessagesFromAccount ({ hexPublicKey }) {
   try {
     const { messages } = await getMessages({ hexPublicKey }, newMessage)
-
+    console.log('messages', messages)
     if (!messages || !messages?.length === 0) return
 
     // Messages filtered by current Account
@@ -162,19 +162,8 @@ function validatePolicy (code) {
   policy.value = code
 }
 
-async function onSavePolicy () {
-  const message = { xml: 'xml_code', policyCode: policy.value, keys: [getActiveAccount.value.npub] }
-
-  const { npub } = getActiveAccount.value || {}
-  const toPublickKey = npub
-
-  if (!message || !toPublickKey) return
-
-  const pubs = await sendMessage({ message, toPublickKey }, onSuccessPublish)
-}
-
 function onSuccessPublish (response) {
-  console.log({ response })
+  console.log('onSuccessPublish', { response })
 }
 
 // Computed
@@ -201,17 +190,21 @@ const eligiblesContacts = computed(() => {
  * @description Saves the current workspace to local storage as a policy.
  * @returns {void}
  */
-function savePolicy () {
+async function savePolicy () {
   try {
     showLoading()
     const textDom = blocklyRef.value.saveWorkspace()
     const serializer = new XMLSerializer()
     const xmlString = serializer.serializeToString(textDom)
-    const policy = {
-      users: eligiblesContacts.value,
-      xmlString
-    }
-    localStorage.setItem('savedPolicy', JSON.stringify(policy))
+
+    const message = { xml: xmlString, policyCode: policy.value, keys: [eligiblesContacts.value] }
+    console.log('message', message)
+    const { npub } = getActiveAccount.value || {}
+    const toPublickKey = npub
+
+    if (!message || !toPublickKey) return
+
+    await sendMessage({ message, toPublickKey }, onSuccessPublish)
   } catch (e) {
     console.error(e)
     handlerError(e)
