@@ -78,9 +78,10 @@ q-card.full-width(flat bordered)
         )
       .row.justify-end
         q-btn(
+          v-if="currentSelection != options[2]"
           type="submit"
           label="Ok"
-          color="secondary"
+          color="positive"
           no-caps
         )
 </template>

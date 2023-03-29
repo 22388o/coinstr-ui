@@ -127,6 +127,29 @@ const generateCode = () => {
   return Blockly.JavaScript.workspaceToCode(workspace)
 }
 
+/**
+@name saveWorkspace
+@description Gets the current state of the Blockly workspace in XML format
+@returns {Element} An XML object representing the current state of the Blockly workspace
+*/
+const saveWorkspace = () => {
+  const workspace = Blockly.getMainWorkspace()
+  return Blockly.Xml.workspaceToDom(workspace)
+}
+
+/**
+@name loadWorkspace
+@description Loads a previous state of the Blockly workspace from an XML object and displays it on the current workspace
+@param {String} textDom - An XML object representing a previous state of the Blockly workspace
+@returns {void}
+*/
+const loadWorkspace = (textDom) => {
+  const workspace = Blockly.getMainWorkspace()
+  workspace.clear()
+  const xml = Blockly.Xml.textToDom(textDom)
+  Blockly.Xml.domToWorkspace(xml, workspace)
+}
+
 // Debugger function
 function readTree (beginBlock) {
   const childrenList = {
@@ -350,7 +373,7 @@ const loadBlockly = () => {
       }
     )
   } catch (e) {
-    console.warn(e)
+    console.warn('allow_chain_in_thresh is already registered')
   }
 
   // Set AND custom block
@@ -468,8 +491,8 @@ const loadBlockly = () => {
     generateOptions: function () {
       if (!props.eligiblesKeys || !props.eligiblesKeys.length === 0) return [['Please add contacts to policy', '']]
       const newOptions = props.eligiblesKeys?.map(option => {
-        const label = option.display_name || option.name
-        const pk = option.bitcoinAddress || ''
+        const label = option.label
+        const pk = option.pk
         return [label, pk]
       })
       if (newOptions.length >= 1) return newOptions
@@ -543,7 +566,9 @@ const loadBlockly = () => {
 
 // - Expose generateCode function
 defineExpose({
-  generateCode
+  generateCode,
+  saveWorkspace,
+  loadWorkspace
 })
 // -
 </script>
@@ -551,5 +576,5 @@ defineExpose({
 <style lang="stylus" scoped>
 #blocklyContainer
   width: 100%
-  height: 80vh
+  height: 78vh
 </style>

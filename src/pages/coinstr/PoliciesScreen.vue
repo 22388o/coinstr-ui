@@ -2,32 +2,41 @@
 #PoliciesScreen
   .row
     .col-8
-      coinstr-blockly(
-        ref="blocklyRef"
-        @onChangedPolicy="validatePolicy"
-        :eligiblesKeys="eligiblesContacts"
-        :myPublicKey="myPublicKey"
-      )
+      #template
+        .text-body2.text-bold Policy creator:
+        coinstr-blockly(
+          ref="blocklyRef"
+          @onChangedPolicy="validatePolicy"
+          :eligiblesKeys="eligiblesContacts"
+          :myPublicKey="myPublicKey"
+        )
       .row.q-mt-sm
-        .box.col.q-px-sm
+        .box.col.q-pr-sm
           .text-body2.text-bold Policy code:
           .text-body2.text-weight-light {{ policy }}
         .row.justify-end.q-gutter-x-sm(v-if="isLoggedInNostr")
-            q-btn(
-              label="Save policy"
-              color="primary"
-              @click="onSavePolicy"
-            )
-            q-btn(
-              label="Load policy"
-              color="secondary"
-            )
-      .row.q-pt-md
-        .row {{ currentOwnMessages.length }} messages
+          q-btn(
+            label="Save policy"
+            color="primary"
+            @click="savePolicy"
+          )
+          q-btn(
+            label="Load policy"
+            color="secondary"
+            @click="loadPolicy"
+          )
     .col.q-pl-md
       template(v-if="isLoggedInNostr")
         .text-body2.text-bold Contacts:
-        users-list.list(v-model="contacts" :loading="contacts === undefined")
+        q-input.q-mb-sm(
+          placeholder="Search"
+          dense
+          v-model="searchContacts"
+          debounce="100"
+          clearable
+          clear-icon="close"
+        )
+        users-list.list(v-model="contacts" :loading="contacts === undefined" :search="searchContacts")
       template(v-else)
         .text-body2.text-center.q-mt-md Please log in with your NOSTR account to see your contacts and add them to Policy.
 </template>
@@ -36,7 +45,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import CoinstrBlockly from '~/components/coinstr/coinstr-blockly'
 import UsersList from '~/components/coinstr/users-list.vue'
-import { useNostr } from '~/composables'
+import { useNostr, useNotifications } from '~/composables'
 import { useStore } from 'vuex'
 
 const $store = useStore()
@@ -50,9 +59,16 @@ const {
   subscriptionToMessages
 } = useNostr()
 
+const {
+  handlerError,
+  showLoading,
+  hideLoading
+} = useNotifications()
+
 const blocklyRef = ref(undefined)
 const policy = ref(undefined)
 const contacts = ref(undefined)
+const searchContacts = ref(undefined)
 
 const isLoggedInNostr = computed(() => $store.getters['nostr/isLoggedInNostr'])
 const myPublicKey = ref(undefined)
@@ -75,6 +91,12 @@ onMounted(async () => {
   }
 })
 
+/**
+ * @async
+ * @name loadContacts
+ * @description Loads contacts for the currently active account.
+ * @returns {Promise<void>}
+ */
 const currentOwnMessages = computed(() => $store.getters['nostr/getOwnMessages'])
 const newMessages = []
 
@@ -98,7 +120,7 @@ async function newMessage (message) {
 async function getMessagesFromAccount ({ hexPublicKey }) {
   try {
     const { messages } = await getMessages({ hexPublicKey }, newMessage)
-
+    console.log('messages', messages)
     if (!messages || !messages?.length === 0) return
 
     // Messages filtered by current Account
@@ -122,40 +144,104 @@ async function getMessagesFromAccount ({ hexPublicKey }) {
   }
 }
 async function loadContacts () {
-  const pubkey = $store.getters['nostr/getActiveAccount']
-  if (isLoggedInNostr.value) {
-    myPublicKey.value = pubkey.hex
-    const data = await getContacts({ publicKey: pubkey.hex })
-    contacts.value = data
-  } else contacts.value = undefined
-}
-
-function generateCode () {
-  const result = blocklyRef.value.generateCode()
-  policy.value = result
+  try {
+    contacts.value = undefined
+    const pubKey = $store.getters['nostr/getActiveAccount']
+    if (isLoggedInNostr.value) {
+      myPublicKey.value = pubKey.hex
+      const data = await getContacts({ publicKey: pubKey.hex })
+      contacts.value = data
+    } else contacts.value = undefined
+  } catch (e) {
+    handlerError(e)
+    console.error(e)
+  }
 }
 
 function validatePolicy (code) {
   policy.value = code
 }
-async function onSavePolicy () {
-  const message = { xml: 'xml_code', policyCode: policy.value, keys: [getActiveAccount.value.npub] }
 
-  const { npub } = getActiveAccount.value || {}
-  const toPublickKey = npub
-
-  if (!message || !toPublickKey) return
-
-  const pubs = await sendMessage({ message, toPublickKey }, onSuccessPublish)
-}
 function onSuccessPublish (response) {
-  console.log({ response })
+  console.log('onSuccessPublish', { response })
 }
+
+// Computed
 const eligiblesContacts = computed(() => {
   if (!contacts.value) return []
-  return Object.entries(contacts.value).map(v => v[1]).filter(user => user.isSelectable)
+  const _contacts = contacts.value.filter(user => user.isSelectable).map((user) => {
+    const label = user.display_name || user.name
+    const isSelectable = user.isSelectable
+    const pk = user.bitcoinAddress
+    return {
+      ...user,
+      label,
+      pk,
+      isSelectable
+    }
+  })
+  return _contacts
 })
 
+// Save and load policies
+
+/**
+ * @name savePolicy
+ * @description Saves the current workspace to local storage as a policy.
+ * @returns {void}
+ */
+async function savePolicy () {
+  try {
+    showLoading()
+    const textDom = blocklyRef.value.saveWorkspace()
+    const serializer = new XMLSerializer()
+    const xmlString = serializer.serializeToString(textDom)
+
+    const message = { xml: xmlString, policyCode: policy.value, keys: [eligiblesContacts.value] }
+    console.log('message', message)
+    const { npub } = getActiveAccount.value || {}
+    const toPublickKey = npub
+
+    if (!message || !toPublickKey) return
+
+    await sendMessage({ message, toPublickKey }, onSuccessPublish)
+  } catch (e) {
+    console.error(e)
+    handlerError(e)
+  } finally {
+    hideLoading()
+  }
+}
+
+/**
+ * @name loadPolicy
+ * @description Loads a previously saved policy from local storage.
+ * @returns {void}
+ */
+function loadPolicy () {
+  try {
+    showLoading()
+    const savedPolicy = localStorage.getItem('savedPolicy')
+    const { xmlString, users } = JSON.parse(savedPolicy)
+    users.forEach(policyUser => {
+      const isALoadedUser = !!eligiblesContacts.value.find(v => v.bitcoinAddress === policyUser.bitcoinAddress)
+      if (!isALoadedUser) {
+        const contactOnList = contacts.value.find(v => v.bitcoinAddress === policyUser.bitcoinAddress)
+        if (contactOnList) {
+          contactOnList.isSelectable = true
+        } else contacts.value = contacts.value.concat(policyUser)
+      }
+    })
+    setTimeout(() => {
+      blocklyRef.value.loadWorkspace(xmlString)
+    }, 500)
+  } catch (e) {
+    console.error(e)
+    handlerError(e)
+  } finally {
+    hideLoading()
+  }
+}
 // --
 </script>
 
@@ -165,6 +251,6 @@ const eligiblesContacts = computed(() => {
   overflow-wrap: break-word
 
 .list
-  height: 85vh
+  height: 80vh
   overflow-y: scroll
 </style>

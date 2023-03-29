@@ -126,21 +126,19 @@ module.exports = configure(function (ctx) {
         })
         // This cause the following warning "DeprecationWarning: chunk.files was changed from Array to Set (using Array property 'length' is deprecated)"
         // Remove if generate broken issues
-        chain.plugin('uglify')
-          .use(UglifyJSPlugin, [{
-            uglifyOptions: {
-              compress: true,
-              mangle: true,
-              output: {
-                comments: false,
-                beautify: false
+        if (ctx.prod) {
+          chain.plugin('uglify')
+            .use(UglifyJSPlugin, [{
+              uglifyOptions: {
+                compress: true,
+                mangle: true,
+                output: {
+                  comments: false,
+                  beautify: false
+                }
               }
-            }
-          }])
-        // chain.experiments = {
-        //   ...chain.experiments,
-
-        // }
+            }])
+        }
       }
     },
 
