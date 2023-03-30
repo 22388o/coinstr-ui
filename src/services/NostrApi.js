@@ -3,6 +3,7 @@ import {
   getPublicKey,
   getEventHash,
   signEvent,
+  nip04,
   nip05,
   nip19,
   validateEvent,
@@ -125,6 +126,79 @@ class NostrApi {
     }
   }
 
+  /**
+   * Get all policies with shared keys
+   * @param {string} pubkey
+   * @returns {Promise<[]>}
+   */
+  async getPoliciesByAccount ({ pubkey }) {
+    try {
+      /**
+       * Build event for list
+       * @param {[]} events
+       * @returns {[{kinds: *}]}
+       */
+      const buildEventForList = (events) => {
+        return [{
+          kinds: [...events]
+        }]
+      }
+      // Get policies from the pool
+      const policies = await this.pool.list(this.relays, buildEventForList([EventKind.POLICY]))
+      // Get shared keys from the pool
+      const allSharedKeys = await this.pool.list(this.relays, buildEventForList([EventKind.SHARED_KEY]))
+
+      // Filter policies by pubkey
+      const policiesFiltered = policies?.filter(policy => {
+        const { tags } = policy
+        return tags.some(tag => {
+          const [type, value] = tag
+          return type === 'p' && value === pubkey
+        })
+      })
+
+      if (!policiesFiltered.length) throw new Error('No policies found')
+
+      // For each policy, get the shared key and decrypt the policy
+      for (const policy of policiesFiltered) {
+        // Get the policy id
+        const { content: contentPolicy, id, pubkey: pubKeyPolicy } = policy || {}
+
+        // Get the shared key
+        const sharedKey = allSharedKeys.find(sharedKey => {
+          const { tags } = sharedKey || {}
+          const [event] = tags || []
+          const [type, value] = event || []
+          return type === 'e' && value === id
+        })
+
+        if (!sharedKey) throw new Error('Shared key not found')
+
+        // Get the shared key's pubkey
+        const { content: contentSharedKeys, tags } = sharedKey || {}
+        const pubKeyShared = tags?.[1]?.[1]
+
+        if (!contentSharedKeys || !pubKeyShared) throw new Error('Unable to get shared key')
+        // Decrypt the shared key
+        const privKeyShared = await Nip07.decrypt(pubKeyShared, contentSharedKeys)
+
+        if (!privKeyShared) throw new Error('Unable to get private key from shared key')
+
+        // Decrypt the policy using the shared key
+        const decryptedPolicy = await nip04.decrypt(privKeyShared, pubKeyPolicy, contentPolicy)
+
+        const parsedPolicy = JSON.parse(decryptedPolicy)
+
+        if (!parsedPolicy) throw new Error('Unable to parse policy')
+
+        policy.plainText = parsedPolicy
+      }
+      return policiesFiltered
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
   async subscriptionToMessages ({ hexPublicKey }, subTrigger) {
     const event = {
       kinds: [EventKind.DM],
@@ -137,9 +211,29 @@ class NostrApi {
     return sub
   }
 
+  /**
+   * Decrypts a message using the wallet Extension and the sender public key
+   * @async
+   * @function
+   * @param {string} publicKey - A public key
+   * @param {string} message - An encrypted message
+   * @returns {Promise.<string>} - The decrypted message
+   * @throws {Error} - If either the publicKey or message is missing or invalid, or if there's an error decrypting
+   */
   async decryptMessage ({ publicKey, message }) {
-    const response = await Nip07.decrypt(publicKey, message)
-    return response
+    if (!publicKey || !message) {
+      throw new Error('Missing params')
+    }
+    if (typeof publicKey !== 'string' || typeof message !== 'string') {
+      throw new Error('Invalid params')
+    }
+
+    try {
+      const response = await Nip07.decrypt(publicKey, message)
+      return response
+    } catch (e) {
+      throw new Error(e)
+    }
   }
 
   HexToNpub ({ publicKey }) {

@@ -246,6 +246,11 @@ export const useNostr = () => {
 
     return metadata
   }
+
+  const getPoliciesByAccount = async () => {
+    const { hex, npub } = getActiveAccount.value
+    return nostrApi.getPoliciesByAccount({ pubkey: hex })
+  }
   const isNpub = (key) => {
     const npubIdentifier = 'npub'
     return key?.substring(0, npubIdentifier.length) === npubIdentifier
@@ -360,6 +365,7 @@ export const useNostr = () => {
     getMessages,
     subscriptionToMessages,
     decryptMessage,
-    addOwnMessage
+    addOwnMessage,
+    getPoliciesByAccount
   }
 }

@@ -47,7 +47,6 @@ import CoinstrBlockly from '~/components/coinstr/coinstr-blockly'
 import UsersList from '~/components/coinstr/users-list.vue'
 import { useNostr, useNotifications } from '~/composables'
 import { useStore } from 'vuex'
-
 const $store = useStore()
 const {
   getContacts,
@@ -56,6 +55,7 @@ const {
   getActiveAccount,
   decryptMessage,
   addOwnMessage,
+  getPoliciesByAccount,
   subscriptionToMessages
 } = useNostr()
 
@@ -76,6 +76,8 @@ let messageSubscriptions
 
 watch(isLoggedInNostr, async function (v) {
   try {
+    const response = await getPoliciesByAccount()
+    console.log({ policies: response })
     loadContacts()
     await getMessagesFromAccount({ hexPublicKey: getActiveAccount.value.hex })
   } catch (e) {

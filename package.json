@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.14.2",
+    "@rust-nostr/nostr": "^0.3.0",
     "@storybook/addon-interactions": "^6.5.15",
     "@storybook/jest": "^0.0.10",
     "@storybook/testing-library": "^0.0.13",
