@@ -76,8 +76,7 @@ let messageSubscriptions
 
 watch(isLoggedInNostr, async function (v) {
   try {
-    const response = await getPoliciesByAccount()
-    console.log({ policies: response })
+    const policies = await getPoliciesByAccount()
     loadContacts()
     await getMessagesFromAccount({ hexPublicKey: getActiveAccount.value.hex })
   } catch (e) {
@@ -122,7 +121,6 @@ async function newMessage (message) {
 async function getMessagesFromAccount ({ hexPublicKey }) {
   try {
     const { messages } = await getMessages({ hexPublicKey }, newMessage)
-    console.log('messages', messages)
     if (!messages || !messages?.length === 0) return
 
     // Messages filtered by current Account
@@ -134,12 +132,12 @@ async function getMessagesFromAccount ({ hexPublicKey }) {
       try {
         plainText = await decryptMessage({ message: content })
         msg.plainText = plainText
-        console.log({ msg })
         addOwnMessage({ message: msg })
       } catch (e) {
         console.error(e)
       }
     }
+    console.log({ messagesFiltered })
     messageSubscriptions = await subscriptionToMessages({ hexPublicKey }, newMessage)
   } catch (error) {
     console.error(error)
@@ -199,7 +197,16 @@ async function savePolicy () {
     const serializer = new XMLSerializer()
     const xmlString = serializer.serializeToString(textDom)
 
-    const message = { xml: xmlString, policyCode: policy.value, keys: [eligiblesContacts.value] }
+    const message = {
+      name: 'MultiSig 2 of 2',
+      description: 'Testing Coinstr',
+      outputDescriptor: 'thresh(2,pk(5e61551ceb04521181d9ad40295e32dce5dc5609c4612a3239dbc60c30080dcd),pk(d223b67e6091ef0665188a4016d20a51a7bbb1b240fafc4429bf1329527338d1))',
+      uiMetadata: {
+        xml: xmlString,
+        policyCode: policy.value,
+        keys: [eligiblesContacts.value]
+      }
+    }
     console.log('message', message)
     const { npub } = getActiveAccount.value || {}
     const toPublickKey = npub

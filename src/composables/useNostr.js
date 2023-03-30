@@ -103,6 +103,7 @@ export const useNostr = () => {
       promises.push(requestContacts({ relay, publicKey }))
     })
     const contacts = await Promise.all(promises)
+    if (contacts.length === 0) return []
     const _contacts = contacts.map(contact => contact.contacts)
     return helperFilterContacts(_contacts)
   }
@@ -142,10 +143,14 @@ export const useNostr = () => {
 */
   const sendMessage = async ({ toPublickKey, message }, subTrigger) => {
     const { hex, npub } = getActiveAccount.value
-
+    const { name, description, outputDescriptor, uiMetadata } = message || {}
     const { data: toHexKey } = NpubToHex(toPublickKey)
-
-    const _message = createMessage({ app: 'coinstr', type: 'policy', data: message })
+    const _message = createMessage({
+      name,
+      description,
+      output_descriptor: outputDescriptor,
+      ui_metadata: uiMetadata
+    })
     const ciphertext = await nostrApi.encryptMessage({ publicKey: toHexKey, message: _message })
 
     const pubs = await nostrApi.sendMessage({
@@ -174,26 +179,17 @@ export const useNostr = () => {
   /**
    * Create a metadata string [Message to send] from the given data.
    *
-   * @param {object} options - The options object.
-   * @param {string} options.app - The name of the app. [Coinstr]
-   * @param {string} options.type - The type of the message. [Policy]
-   * @param {object} options.data - The data to include in the message.
+   * @param {object} Object - The options object.
    *
    * @returns {string} The metadata string.
    */
-  const createMessage = ({ app, type, data }) => {
-    const metadata = {
-      app,
-      type,
-      message: JSON.stringify(data)
-    }
 
-    let metadataString = ''
-    for (const [key, value] of Object.entries(metadata)) {
-      metadataString += `#${encodeURIComponent(key)}:${encodeURIComponent(value)}`
+  const createMessage = (obj) => {
+    try {
+      return JSON.stringify(obj)
+    } catch (e) {
+      throw new Error('Invalid object')
     }
-
-    return metadataString
   }
   /**
    * Decrypts a message using the active account's public key and returns the metadata as an object.
@@ -220,35 +216,20 @@ export const useNostr = () => {
    * @returns {object|undefined} An object containing the metadata key-value pairs, or undefined if parsing failed.
    */
   const getMetadataFromString = (metadataString) => {
-    if (!metadataString && metadataString === '') return undefined
-
-    const metadata = {}
-
-    const parts = metadataString?.split('#')
-    const _parts = parts?.filter(part => part !== '')
-
-    if (!_parts || _parts.length === 0) return undefined
-
-    _parts.forEach(part => {
-      const [key, value] = part?.split(':')
-      try {
-        metadata[decodeURIComponent(key)] = decodeURIComponent(value)
-      } catch (e) {
-        return undefined
-      }
-    })
-
     try {
-      metadata.message = JSON.parse(metadata.message)
-    } catch (e) {
-      return undefined
+      return JSON.parse(metadataString)
+    } catch (error) {
+      console.error(error)
+      throw new Error('Error parsing metadata string')
     }
-
-    return metadata
   }
-
+  /**
+   * Get a list of policies for a given account
+   * @param {Object} params
+   * @param {String} params.pubkey - the account public key
+   */
   const getPoliciesByAccount = async () => {
-    const { hex, npub } = getActiveAccount.value
+    const { hex } = getActiveAccount.value
     return nostrApi.getPoliciesByAccount({ pubkey: hex })
   }
   const isNpub = (key) => {

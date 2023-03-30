@@ -25,6 +25,7 @@ export default class Nip07 {
 
   static decrypt (pubkey, ciphertext) {
     Nip07.enforceAvailable()
-    return window.nostr.nip04.decrypt(pubkey, ciphertext)
+    // Flaming Wallet do not use this method
+    return window.nostr.nip04?.decrypt(pubkey, ciphertext)
   }
 }

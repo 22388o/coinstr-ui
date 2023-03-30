@@ -60,7 +60,6 @@ class NostrApi {
   }
 
   async getProfileMetadata ({ publicKey }) {
-    // retornar sub (useProofOfReserves)
     const sub = this.relay.sub([
       {
         kinds: [EventKind.METADATA],
@@ -81,21 +80,34 @@ class NostrApi {
     return Nip07.encrypt(publicKey, message)
   }
 
+  async BuildEvent ({ kind, content, tags, pubkey, signed = false }) {
+    const event = {
+      pubkey,
+      kind,
+      content,
+      tags,
+      created_at: Math.floor(Date.now() / 1000)
+    }
+    if (signed) {
+      event.id = getEventHash(event)
+      const { sig } = await Nip07.signEvent(event)
+      event.sig = sig
+    }
+
+    return { event }
+  }
+
   async sendMessage ({ from, to, ciphertext }, subTrigger) {
     try {
       const { hex } = from || {}
 
-      const event = {
-        pubkey: hex,
+      const { event } = await this.BuildEvent({
         kind: EventKind.DM,
-        tags: [['p', to]],
         content: ciphertext,
-        created_at: Math.floor(Date.now() / 1000)
-      }
-
-      event.id = getEventHash(event)
-      const { sig } = await Nip07.signEvent(event)
-      event.sig = sig
+        tags: [['p', to]],
+        pubkey: hex,
+        signed: true
+      })
       const pubs = this.pool.publish(this.relays, event)
       pubs.on('ok', (response) => {
         // this may be called multiple times, once for every relay that accepts the event
@@ -157,7 +169,7 @@ class NostrApi {
         })
       })
 
-      if (!policiesFiltered.length) throw new Error('No policies found')
+      if (!policiesFiltered.length) return []
 
       // For each policy, get the shared key and decrypt the policy
       for (const policy of policiesFiltered) {
