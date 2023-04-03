@@ -1,5 +1,6 @@
 import {
   relayInit,
+  generatePrivateKey,
   getPublicKey,
   getEventHash,
   signEvent,
@@ -138,6 +139,71 @@ class NostrApi {
     }
   }
 
+  async savePolicy ({ name, decription, descriptor }) {
+    const extractedPubKeys = this.extractPublicKeys(descriptor)
+
+    const _secretKey = generatePrivateKey()
+
+    const sharedKey = {
+      secretKey: _secretKey,
+      publicKey: getPublicKey(_secretKey)
+    }
+    const policy = this.fromDescriptionOrPolicy({ name, decription, descriptor })
+
+    const content = nip04.encrypt(sharedKey.secretKey, sharedKey.publicKey, policy)
+    console.log({ content })
+
+    const tags = extractedPubKeys.map(pubkey => ['p', pubkey])
+
+    const event = await this.BuildEvent({
+      kind: EventKind.POLICY,
+      content,
+      tags: [...tags],
+      pubkey: sharedKey.publicKey
+    })
+  }
+
+  fromDescriptionOrPolicy ({ name, description, descriptor }) {
+    const fromDescriptor = this.fromDescriptor({ name, description, descriptor })
+
+    if (fromDescriptor) return fromDescriptor
+
+    return this.fromMiniscriptPolicy({ name, description, descriptor })
+  }
+
+  fromDescriptor ({ name, description, descriptor }) {
+    // pub fn from_descriptor<S>(name: S, description: S, descriptor: S) -> Result<Self, Error>
+    // where
+    //     S: Into<String>,
+    // {
+    //     let descriptor = Descriptor::from_str(&descriptor.into())?;
+    //     Self::new(name, description, descriptor)
+    // }
+
+    return {
+      name,
+      description,
+      descriptor: "tr('ec85f285501b21ee511f351cfa9312f4e9af77a719b63bfaeb7fba8fecee5f69',[B/duesm]multi_a(2,5e61551ceb04521181d9ad40295e32dce5dc5609c4612a3239dbc60c30080dcd,d223b67e6091ef0665188a4016d20a51a7bbb1b240fafc4429bf1329527338d1))"
+    }
+  }
+
+  fromMiniscriptPolicy ({ name, description, descriptor }) {
+    // Call method from WASM
+  }
+
+  extractPublicKeys (descriptor) {
+    return [
+      [
+        'p',
+        'b16a94bddab7bf6a85de08d0ad6fe601418270598509ac6a23b7ba92c1015705' // frank
+      ],
+      [
+        'p',
+        'd62408188ab170d846028cd4fc61c47989cd1fb15bf5cb5d1d37016d85866bfb' // gary
+      ]
+    ]
+  }
+
   /**
    * Get all policies with shared keys
    * @param {string} pubkey
@@ -159,16 +225,17 @@ class NostrApi {
       const policies = await this.pool.list(this.relays, buildEventForList([EventKind.POLICY]))
       // Get shared keys from the pool
       const allSharedKeys = await this.pool.list(this.relays, buildEventForList([EventKind.SHARED_KEY]))
-
+      console.log({ allSharedKeys })
       // Filter policies by pubkey
       const policiesFiltered = policies?.filter(policy => {
         const { tags } = policy
+        console.log({ tagsPolicy: tags })
         return tags.some(tag => {
           const [type, value] = tag
           return type === 'p' && value === pubkey
         })
       })
-
+      console.log({ policiesFiltered })
       if (!policiesFiltered.length) return []
 
       // For each policy, get the shared key and decrypt the policy
@@ -179,6 +246,7 @@ class NostrApi {
         // Get the shared key
         const sharedKey = allSharedKeys.find(sharedKey => {
           const { tags } = sharedKey || {}
+          console.log({ tagsSharedKeys: tags })
           const [event] = tags || []
           const [type, value] = event || []
           return type === 'e' && value === id

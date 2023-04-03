@@ -103,8 +103,8 @@ export const useNostr = () => {
       promises.push(requestContacts({ relay, publicKey }))
     })
     const contacts = await Promise.all(promises)
-    if (contacts.length === 0) return []
-    const _contacts = contacts.map(contact => contact.contacts)
+    if (contacts?.length === 0) return []
+    const _contacts = contacts.map(contact => contact?.contacts)
     return helperFilterContacts(_contacts)
   }
   const requestContacts = async ({ relay, publicKey }) => {
@@ -121,11 +121,12 @@ export const useNostr = () => {
             value.bitcoinAddress = key
           }
         }
-
+        if (!contacts) return undefined
         return { contacts }
       }
     } catch (error) {
       console.error('Error fetching data:', error)
+      throw new Error('Error fetching data')
     }
   }
 

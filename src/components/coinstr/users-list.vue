@@ -70,7 +70,7 @@ function removeUserToPolicy (user) {
 
 const showList = computed(() => {
   if (!_users.value) return false
-  if (Object.entries(_users).length > 0 && loading.value === false) return true
+  if (Object.entries(_users)?.length > 0 && loading.value === false) return true
   return false
 })
 
