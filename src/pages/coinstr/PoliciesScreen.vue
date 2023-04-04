@@ -194,17 +194,14 @@ async function savePolicy () {
   try {
     showLoading()
     const textDom = blocklyRef.value.saveWorkspace()
-    const serializer = new XMLSerializer()
-    const xmlString = serializer.serializeToString(textDom)
 
-    const message = { xml: xmlString, policyCode: policy.value, keys: [eligiblesContacts.value] }
-    console.log('message', message)
+    const message = { json: textDom, policyCode: policy.value, keys: [eligiblesContacts.value] }
     const { npub } = getActiveAccount.value || {}
     const toPublickKey = npub
 
     if (!message || !toPublickKey) return
-
-    await sendMessage({ message, toPublickKey }, onSuccessPublish)
+    localStorage.setItem('savedPolicy', JSON.stringify(message))
+    // await sendMessage({ message, toPublickKey }, onSuccessPublish)
   } catch (e) {
     console.error(e)
     handlerError(e)
@@ -222,18 +219,19 @@ function loadPolicy () {
   try {
     showLoading()
     const savedPolicy = localStorage.getItem('savedPolicy')
-    const { xmlString, users } = JSON.parse(savedPolicy)
+    const { json, keys: users } = JSON.parse(savedPolicy)
+
     users.forEach(policyUser => {
-      const isALoadedUser = !!eligiblesContacts.value.find(v => v.bitcoinAddress === policyUser.bitcoinAddress)
+      const isALoadedUser = !!eligiblesContacts.value.find(v => v.bitcoinAddress === policyUser?.bitcoinAddress)
       if (!isALoadedUser) {
-        const contactOnList = contacts.value.find(v => v.bitcoinAddress === policyUser.bitcoinAddress)
+        const contactOnList = contacts.value?.find(v => v.bitcoinAddress === policyUser.bitcoinAddress)
         if (contactOnList) {
           contactOnList.isSelectable = true
-        } else contacts.value = contacts.value.concat(policyUser)
+        } else contacts.value = contacts.value?.concat(policyUser)
       }
     })
     setTimeout(() => {
-      blocklyRef.value.loadWorkspace(xmlString)
+      blocklyRef.value.loadWorkspace(json)
     }, 500)
   } catch (e) {
     console.error(e)
