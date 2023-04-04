@@ -213,7 +213,20 @@ async function savePolicy () {
 
     if (!message || !toPublickKey) return
 
-    await sendMessage({ message, toPublickKey }, onSuccessPublish)
+    try {
+      const { hex } = getActiveAccount.value
+      const response = await $store.$nostrApi.savePolicy({
+        name: message?.name,
+        description: message?.description,
+        descriptor: message?.outputDescriptor,
+        uiMetadata: message?.uiMetadata,
+        pubKey: hex
+      })
+    } catch (error) {
+      handlerError(error)
+    }
+
+    // await sendMessage({ message, toPublickKey }, onSuccessPublish)
   } catch (e) {
     console.error(e)
     handlerError(e)
