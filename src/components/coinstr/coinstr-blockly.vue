@@ -134,7 +134,9 @@ const generateCode = () => {
 */
 const saveWorkspace = () => {
   const workspace = Blockly.getMainWorkspace()
-  return Blockly.Xml.workspaceToDom(workspace)
+  const json = Blockly.serialization.workspaces.save(workspace)
+  // const xml = Blockly.Xml.workspaceToDom(workspace)
+  return json
 }
 
 /**
@@ -143,11 +145,12 @@ const saveWorkspace = () => {
 @param {String} textDom - An XML object representing a previous state of the Blockly workspace
 @returns {void}
 */
-const loadWorkspace = (textDom) => {
+const loadWorkspace = (json) => {
   const workspace = Blockly.getMainWorkspace()
   workspace.clear()
-  const xml = Blockly.Xml.textToDom(textDom)
-  Blockly.Xml.domToWorkspace(xml, workspace)
+  // const xml = Blockly.Xml.textToDom(textDom)
+  // Blockly.Xml.domToWorkspace(xml, workspace)
+  Blockly.serialization.workspaces.load(json, workspace)
 }
 
 // Debugger function
