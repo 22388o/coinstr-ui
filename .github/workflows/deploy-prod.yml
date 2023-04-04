@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Build and Deploy - Develop
+name: Build and Deploy - Production
 
 # Controls when the workflow will run
 on:
@@ -15,7 +15,7 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    name: build-deploy-dev
+    name: build-deploy-production
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -29,7 +29,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v3.1.1
         with:
-          node-version: '16.x'
+          node-version: '18.x'
 
       # GIT Config
       - name: Fix up git URLs
@@ -46,38 +46,26 @@ jobs:
         run: quasar build
         env:
           APP_NAME: 'COINSTR - Portal'
-          WSS: 'wss://n1.main.hashed.systems'
-          IPFS_URL: 'https://ipfs.infura.io:5001/'
-          PRIVATE_URI: 'https://hp-dev.hashed.systems/v1/graphql'
-          BDK_SERVICES_URL: 'https://bdk.hashed.systems'
-          GOOGLE_CLIENT_ID: '${{ secrets.GOOGLE_CLIENT_ID }}'
-          IPFS_PROJECT_ID: '${{ secrets.IPFS_PROJECT_ID }}'
-          IPFS_PROJECT_SECRET: '${{ secrets.IPFS_PROJECT_SECRET }}'
-          FAUCET_SERVER_URL: 'https://faucet-dev.hashed.systems'
-          GATED_PALLET_ID: '0x5d208df71427902157988a56e7527474a7dce921f9d5efa159dcfc849289a53c'
-          GATED_MARKETPLACE_ID: '0xb3914e1762ff9ca8caec57959715350885632a8a323b8c160fc814600669ad33'
-          AFLOAT_COLLECTION_ID: '0'
-          WSS_PARACHAIN: 'wss://c2.hashed.network'
-          NDK_REST_URL: ''
+          NDK_REST_URL: 'http://127.0.0.1:7773/v1'
       #Auth google Could SDK
       - name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v0'
         with:
-          credentials_json: '${{ secrets.DEV_GC_CREDENTIALS }}'            
+          credentials_json: '${{ secrets.PROD_GC_CREDENTIALS }}'            
       
       #Set up Google Cloud SDK
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
         with:
-          project_id: ${{ secrets.DEV_GC_PROJECT_ID }}
-          # service_account_key: ${{ secrets.DEV_GC_CREDENTIALS }}
+          project_id: ${{ secrets.PROD_GC_PROJECT_ID }}
+          # service_account_key: ${{ secrets.PROD_GC_CREDENTIALS }}
 
       
       #Sync to Bucket
       - name: Copy website to bucket
-        run: gsutil -m rsync -R . gs://${{ secrets.DEV_GC_BUCKET_NAME }}
+        run: gsutil -m rsync -R . gs://${{ secrets.PROD_GC_BUCKET_NAME }}
         working-directory: ./dist/spa
       
       #Invalidate CDN Cache
       - name: Invalidate CDN cache
-        run: gcloud compute url-maps invalidate-cdn-cache ${{ secrets.DEV_GC_URL_MAP }} --path=/*
+        run: gcloud compute url-maps invalidate-cdn-cache ${{ secrets.PROD_GC_URL_MAP }} --path=/*
