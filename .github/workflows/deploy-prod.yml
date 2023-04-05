@@ -45,8 +45,8 @@ jobs:
       - name: Build app
         run: quasar build
         env:
-          APP_NAME: 'COINSTR - Portal'
-          NDK_REST_URL: 'http://127.0.0.1:7773/v1'
+          APP_NAME: 'COINSTR'
+          NDK_REST_URL: 'https://nostrkit.dev/v1'
       #Auth google Could SDK
       - name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v0'
