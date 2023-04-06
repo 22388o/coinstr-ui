@@ -81,6 +81,8 @@ const isValidURL = (url) => {
 }
 const getNpub = computed(() => {
   const npub = _user.value.npub
+  if (!npub) return ''
+
   const prefix = 'npub'
   return {
     raw: npub,
