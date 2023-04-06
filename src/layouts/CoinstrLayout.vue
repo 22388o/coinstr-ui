@@ -57,8 +57,8 @@ import {
 import { useStore } from 'vuex'
 import { useNostr, useNotifications } from '~/composables'
 import { useQuasar } from 'quasar'
-import UserItem from '~/components/coinstr/user-item.vue'
-import NostrForm from '~/components/coinstr/nostr-form.vue'
+import UserItem from '~/components/users/user-item.vue'
+import NostrForm from '~/components/login/nostr-form.vue'
 
 const $q = useQuasar()
 

@@ -43,8 +43,8 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-import CoinstrBlockly from '~/components/coinstr/coinstr-blockly'
-import UsersList from '~/components/coinstr/users-list.vue'
+import CoinstrBlockly from '~/components/blockly/coinstr-blockly'
+import UsersList from '~/components/users/users-list.vue'
 import { useNostr, useNotifications } from '~/composables'
 import { useStore } from 'vuex'
 
