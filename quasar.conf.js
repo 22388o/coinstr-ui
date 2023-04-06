@@ -215,8 +215,8 @@ module.exports = configure(function (ctx) {
       },
 
       manifest: {
-        name: 'COINSTR',
-        short_name: 'COINSTR',
+        name: 'Coinstr',
+        short_name: 'Coinstr',
         description: 'This is a template developed by HASHED',
         display: 'standalone',
         orientation: 'portrait',
