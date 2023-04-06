@@ -1,5 +1,5 @@
 <template lang='pug'>
-#UsersListWrapper
+#UsersListWrapper(data-testid="UsersListWrapper")
   q-list(
     bordered
     separator
@@ -19,6 +19,7 @@
     separator
   )
     user-item(
+      role="userItem"
       v-if="showList"
       v-for="user in filteredUsers"
       :user="user"

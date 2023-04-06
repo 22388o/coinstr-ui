@@ -80,6 +80,29 @@ interactive.play = async ({ args, canvasElement }) => {
   await expect(button).toHaveTextContent('Add to Policy')
   await userEvent.click(button)
   await expect(args.onAddUser).toHaveBeenCalledTimes(1)
-  // args.user.isSelectable = true
-  // await expect(button).toHaveTextContent('Added')
+}
+
+export const interactiveAdded = Template.bind({})
+interactiveAdded.args = {
+  user: {
+    ...user,
+    isSelectable: true
+  },
+  interactive: true
+}
+interactiveAdded.play = async ({ args, canvasElement }) => {
+  const canvas = within(canvasElement)
+  const userItem = canvas.getByTestId('userItem')
+  const name = canvas.getByText(user.name)
+  const _npub = user.npub.substring(4, 9) + '...' + user.npub.substring(user.npub.length - 5)
+  const npub = canvas.getByText(_npub)
+  const button = canvas.getByTestId('interactWithPolicyBtn')
+
+  await expect(userItem).toBeInTheDocument()
+  await expect(name).toBeInTheDocument()
+  await expect(npub).toBeInTheDocument()
+  await expect(button).toBeInTheDocument()
+  await expect(button).toHaveTextContent('Added')
+  await userEvent.click(button)
+  await expect(args.onRemoveUser).toHaveBeenCalledTimes(1)
 }

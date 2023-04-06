@@ -6,15 +6,7 @@ import { ref } from 'vue'
 export default {
   title: 'Common/HInput',
   component: HInput,
-  argTypes: {
-    type: {
-      name: 'type',
-      control: {
-        type: 'select',
-        options: ['text', 'textarea']
-      }
-    }
-  }
+  argTypes: {}
 }
 
 const Template = (args) => ({
