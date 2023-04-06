@@ -1,4 +1,3 @@
-import nostr from 'src/store/nostr'
 import {
   computed
 } from 'vue'

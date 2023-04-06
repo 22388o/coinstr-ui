@@ -16,6 +16,7 @@ import messages from '../src/i18n'
 // import messages from '../src/i18n'
 import { createStore } from 'vuex'
 import { Notify, Loading } from 'quasar'
+import nostrStore from '~/store/nostr/index.js'
 
 import TInput from '~/components/common/input/t-input.vue'
 import HInput from '~/components/common/input/h-input.vue'
@@ -26,7 +27,6 @@ app.component('MoneyInput', MoneyInput)
 
 const store = createStore({
   modules: {
-    polkadotWallet,
     profile: {
       namespaced: true,
       getters: {
@@ -34,7 +34,18 @@ const store = createStore({
           return 'test'
         }
       }
+    },
+    nostr: {
+      namespaced: true,
+      state: {
+        publicKey: undefined,
+        privateKey: undefined,
+        account: {},
+        relays: [],
+        ownMessages: []
+      }
     }
+    // nostr: nostrStore
   },
 })
 

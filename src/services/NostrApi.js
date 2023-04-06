@@ -98,11 +98,11 @@ class NostrApi {
       const pubs = this.pool.publish(this.relays, event)
       pubs.on('ok', (response) => {
         // this may be called multiple times, once for every relay that accepts the event
-        console.log('ok', response)
+        // console.log('ok', response)
         subTrigger(response)
       })
       pubs.on('failed', reason => {
-        console.log(`failed to publish: ${reason}`)
+        // console.log(`failed to publish: ${reason}`)
       })
       return pubs
     } catch (error) {

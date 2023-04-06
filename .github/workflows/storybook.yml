@@ -68,7 +68,7 @@ jobs:
       - name: Deploy Chromatic
         uses: chromaui/action-next@v1
         env:
-          APP_NAME: 'COINSTR - Portal'
+          APP_NAME: 'COINSTR'
           WSS: 'wss://n1.hashed.systems'
           BDK_SERVICES_URL: 'https://bdk.hashed.systems'
         with:
