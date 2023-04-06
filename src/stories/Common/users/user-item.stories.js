@@ -1,6 +1,6 @@
 /* eslint-disable storybook/prefer-pascal-case */
 // import { expect } from '@storybook/jest'
-import UserItem from '~/components/coinstr/user-item.vue'
+import UserItem from '~/components/users/user-item.vue'
 import { within, userEvent } from '@storybook/testing-library'
 import { ref } from 'vue'
 import { expect } from '@storybook/jest'
