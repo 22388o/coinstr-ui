@@ -1,7 +1,7 @@
 {
   "name": "coinstr-portal",
   "version": "0.0.1",
-  "description": "Coinstr",
+  "description": "Bitcoin multi-custody signature orchestration",
   "productName": "Coinstr",
   "author": "Jose Maria <josemgo.9.11@gmail.com",
   "private": true,

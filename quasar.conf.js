@@ -217,7 +217,7 @@ module.exports = configure(function (ctx) {
       manifest: {
         name: 'Coinstr',
         short_name: 'Coinstr',
-        description: 'This is a template developed by HASHED',
+        description: 'Bitcoin multi-custody signature orchestration',
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#ffffff',
