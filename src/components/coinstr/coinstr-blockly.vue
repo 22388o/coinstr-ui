@@ -102,6 +102,7 @@ onMounted(() => {
       const code = generateCode()
       emits('onChangedPolicy', code)
     })
+    workspace.scrollbar.dispose()
   } catch (e) {
     handlerError(e)
   }
@@ -555,7 +556,7 @@ const loadBlockly = () => {
   defineCodeGeneration()
 
   // Inject blockly settings on DOM
-  Blockly.inject('blocklyContainer', { toolbox })
+  Blockly.inject('blocklyContainer', { toolbox, scrollbar: false })
   console.warn('Blockly was injected')
 
   // Set in workspace begin block
@@ -580,4 +581,5 @@ defineExpose({
 #blocklyContainer
   width: 100%
   height: 78vh
+  overflow: hidden
 </style>

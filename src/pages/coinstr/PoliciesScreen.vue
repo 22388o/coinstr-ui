@@ -193,8 +193,9 @@ async function savePolicy () {
   try {
     showLoading()
     const textDom = blocklyRef.value.saveWorkspace()
+    const keys = eligiblesContacts.value.map(user => user.pk)
 
-    const message = { json: textDom, policyCode: policy.value, keys: [eligiblesContacts.value] }
+    const message = { json: textDom, policyCode: policy.value, keys }
     const { npub } = getActiveAccount.value || {}
     const toPublickKey = npub
 
@@ -218,15 +219,24 @@ function loadPolicy () {
   try {
     showLoading()
     const savedPolicy = localStorage.getItem('savedPolicy')
-    const { json, keys: users } = JSON.parse(savedPolicy)
+    const { json, keys } = JSON.parse(savedPolicy)
 
-    users.forEach(policyUser => {
-      const isALoadedUser = !!eligiblesContacts.value.find(v => v.bitcoinAddress === policyUser?.bitcoinAddress)
+    keys.forEach(key => {
+      const isALoadedUser = !!eligiblesContacts.value.find(v => v.bitcoinAddress === key)
       if (!isALoadedUser) {
-        const contactOnList = contacts.value?.find(v => v.bitcoinAddress === policyUser.bitcoinAddress)
+        const contactOnList = contacts.value?.find(v => v.bitcoinAddress === key)
         if (contactOnList) {
           contactOnList.isSelectable = true
-        } else contacts.value = contacts.value?.concat(policyUser)
+        } else {
+          contacts.value = contacts.value?.concat([
+            {
+              bitcoinAddress: key,
+              name: `${key.substring(0, 8)}...${key.substring(key.length - 8)}`,
+              display_name: `${key.substring(0, 5)}...${key.substring(key.length - 5)}`,
+              isSelectable: true
+            }
+          ])
+        }
       }
     })
     setTimeout(() => {
