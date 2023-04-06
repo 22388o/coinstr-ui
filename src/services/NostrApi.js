@@ -139,6 +139,7 @@ class NostrApi {
     }
   }
 
+  // TODO: Add the logic when the user enter their private key
   async savePolicy ({ name, description, descriptor, uiMetadata, pubKey }) {
     try {
       const extractedPubKeys = this.extractPublicKeys(descriptor)
@@ -155,6 +156,7 @@ class NostrApi {
         ...policy,
         uiMetadata
       }
+
       message = JSON.stringify(message)
       const content = await nip04.encrypt(sharedKey.secretKey, sharedKey.publicKey, message)
       const tags = extractedPubKeys.map(pubkey => ['p', pubkey])
@@ -167,8 +169,9 @@ class NostrApi {
         signed: true
       })
       const policyEventId = event?.id
-
-      const pubs = await this.pool.publish(this.relays, event)
+      // TODO: publish the policy event
+      // const pubs = await this.pool.publish(this.relays, event)
+      const sharedKeysEvents = []
 
       for (const pubkey of extractedPubKeys) {
         const encryptedSharedKey = await Nip07.encrypt(pubkey, sharedKey.secretKey)
@@ -180,11 +183,12 @@ class NostrApi {
           pubkey: pubKey,
           signed: true
         })
-
-        const pubsSharedKeys = await this.pool.publish(this.relays, sharedKeyEvent)
+        sharedKeysEvents.push(sharedKeyEvent)
+        // TODO: publish the shared keys event
+        // const pubsSharedKeys = await this.pool.publish(this.relays, sharedKeyEvent)
       }
-
-      return event
+      console.log({ policies: event, allSharedKeys: sharedKeysEvents })
+      return { policy, sharedKeysEvents }
     } catch (error) {
       throw new Error(error)
     }
@@ -210,7 +214,7 @@ class NostrApi {
     return {
       name,
       description,
-      descriptor: "tr('ec85f285501b21ee511f351cfa9312f4e9af77a719b63bfaeb7fba8fecee5f69',[B/duesm]multi_a(2,5e61551ceb04521181d9ad40295e32dce5dc5609c4612a3239dbc60c30080dcd,d223b67e6091ef0665188a4016d20a51a7bbb1b240fafc4429bf1329527338d1))"
+      descriptor
     }
   }
 
@@ -221,7 +225,8 @@ class NostrApi {
   extractPublicKeys (descriptor) {
     return [
       'b16a94bddab7bf6a85de08d0ad6fe601418270598509ac6a23b7ba92c1015705', // frank
-      'd62408188ab170d846028cd4fc61c47989cd1fb15bf5cb5d1d37016d85866bfb' // gary
+      'd62408188ab170d846028cd4fc61c47989cd1fb15bf5cb5d1d37016d85866bfb', // gary
+      '6d05e56bb7f8143460fc1976955ea3985e582ec4a783cfb95ed50edbd88be167' // lee
     ]
   }
 
@@ -230,8 +235,8 @@ class NostrApi {
    * @param {string} pubkey
    * @returns {Promise<[]>}
    */
+  // TODO: Add the logic when the user enter their private key
   async getPoliciesByAccount ({ pubkey }) {
-    console.log({ pubkey })
     try {
       /**
        * Build event for list
@@ -243,25 +248,28 @@ class NostrApi {
           kinds: [...events]
         }]
       }
+      const currentUserPubKey = pubkey
+
       // Get policies from the pool
       const policies = await this.pool.list(this.relays, buildEventForList([EventKind.POLICY]))
       // Get shared keys from the pool
       const allSharedKeys = await this.pool.list(this.relays, buildEventForList([EventKind.SHARED_KEY]))
-      console.log({ allSharedKeys })
+
       // Filter policies by pubkey
       const policiesFiltered = policies?.filter(policy => {
         const { tags } = policy
         return tags.some(tag => {
           const [type, value] = tag
-          return type === 'p' && value === pubkey
+          return type === 'p' && value === currentUserPubKey
         })
       })
+
       if (!policiesFiltered.length) return []
 
       // For each policy, get the shared key and decrypt the policy
       for (const policy of policiesFiltered) {
         // Get the policy id
-        const { content: contentPolicy, id, pubkey: pubKeyPolicy } = policy || {}
+        const { content: contentPolicy, id, pubkey: pubKeyPolicy, tags } = policy || {}
 
         // Get the shared key
         const sharedKey = allSharedKeys.find(sharedKey => {
@@ -271,19 +279,23 @@ class NostrApi {
           const [type, value] = event || []
           const [typePub, valuePub] = _pubkey || []
 
-          return type === 'e' && value === id && typePub === 'p' && valuePub === pubkey
+          return type === 'e' && value === id && typePub === 'p' && valuePub === currentUserPubKey
         })
 
         if (!sharedKey) throw new Error('Shared key not found')
 
         // Get the shared key's pubkey
-        const { content: contentSharedKeys, tags } = sharedKey || {}
+        const { content: contentSharedKeys, pubkey: pubkeyOfSharedKey } = sharedKey || {}
 
-        const pubKeyShared = tags?.[1]?.[1]
+        const pubKeySharedArray = tags.filter(tag => {
+          const [type, value] = tag
+          return type === 'p' && value !== currentUserPubKey
+        })
 
-        if (!contentSharedKeys || !pubKeyShared) throw new Error('Unable to get shared key')
-        // Decrypt the shared key
-        const privKeyShared = await Nip07.decrypt(pubKeyShared, contentSharedKeys)
+        if (!contentSharedKeys || !pubKeySharedArray.length === 0) throw new Error('Unable to get shared key')
+
+        const privKeyShared = await Nip07.decrypt(pubkeyOfSharedKey, contentSharedKeys)
+
         if (!privKeyShared) throw new Error('Unable to get private key from shared key')
 
         // Decrypt the policy using the shared key
@@ -295,6 +307,7 @@ class NostrApi {
 
         policy.plainText = parsedPolicy
       }
+      console.log({ policiesFiltered })
       return policiesFiltered
     } catch (error) {
       throw new Error(error)

@@ -137,7 +137,6 @@ async function getMessagesFromAccount ({ hexPublicKey }) {
         console.error(e)
       }
     }
-    console.log({ messagesFiltered })
     messageSubscriptions = await subscriptionToMessages({ hexPublicKey }, newMessage)
   } catch (error) {
     console.error(error)
@@ -199,15 +198,14 @@ async function savePolicy () {
 
     const message = {
       name: 'MultiSig 2 of 2',
-      description: 'Testing Coinstr',
-      outputDescriptor: 'thresh(2,pk(5e61551ceb04521181d9ad40295e32dce5dc5609c4612a3239dbc60c30080dcd),pk(d223b67e6091ef0665188a4016d20a51a7bbb1b240fafc4429bf1329527338d1))',
+      description: 'Testing multisig as part of the Coinstr CLI tutorial',
+      outputDescriptor: 'thresh(2,pk(b16a94bddab7bf6a85de08d0ad6fe601418270598509ac6a23b7ba92c1015705),pk(d62408188ab170d846028cd4fc61c47989cd1fb15bf5cb5d1d37016d85866bfb))',
       uiMetadata: {
         xml: xmlString,
         policyCode: policy.value,
         keys: [eligiblesContacts.value]
       }
     }
-    console.log('message', message)
     const { npub } = getActiveAccount.value || {}
     const toPublickKey = npub
 
