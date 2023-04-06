@@ -44,6 +44,6 @@ BaseInput.args = {
 
 BaseInput.play = async ({ args, canvasElement }) => {
   const canvas = within(canvasElement)
-  const input = canvas.getByTestId('userItem')
+  const input = canvas.getByTestId('HInput')
   await userEvent.type(input, 'Example', { delay: 10 })
 }

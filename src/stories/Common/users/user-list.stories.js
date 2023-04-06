@@ -78,30 +78,29 @@ base.play = async ({ args, canvasElement }) => {
 }
 
 export const searchable = Template.bind({})
-searchable.args = {}
+searchable.args = {
+  search: 'John'
+}
 searchable.play = async ({ args, canvasElement }) => {
   const canvas = within(canvasElement)
   const list = canvas.getByTestId('UsersListWrapper')
   await expect(list).toBeInTheDocument()
-  let users = canvas.getAllByRole('userItem')
-  await expect(users.length).toEqual(3)
-  await sleep(500)
-  args.search = 'John'
-  await sleep(500)
-  users = canvas.getAllByRole('userItem')
+  const users = canvas.getAllByRole('userItem')
   await expect(users.length).toEqual(1)
-  // const buttons = canvas.getAllByTestId('interactWithPolicyBtn')
-  // await expect(buttons[0]).toHaveTextContent('Add to Policy')
-  // await userEvent.click(buttons[0])
-  // await expect(buttons[0]).toHaveTextContent('Added')
-  // await expect(buttons[1]).toHaveTextContent('Add to Policy')
-  // await expect(buttons[2]).toHaveTextContent('Add to Policy')
-  await sleep(500)
-  args.search = undefined
+  const buttons = canvas.getAllByTestId('interactWithPolicyBtn')
+  await expect(buttons[0]).toHaveTextContent('Add to Policy')
+  await userEvent.click(buttons[0])
+  await expect(buttons[0]).toHaveTextContent('Added')
 }
 
 export const loading = Template.bind({})
-
 loading.args = {
   loading: true
+}
+loading.play = async ({ args, canvasElement }) => {
+  const canvas = within(canvasElement)
+  const list = canvas.getByTestId('UsersListWrapper')
+  await expect(list).toBeInTheDocument()
+  const skeleton = canvas.getByTestId('UsersListSkeleton')
+  await expect(skeleton).toBeInTheDocument()
 }
