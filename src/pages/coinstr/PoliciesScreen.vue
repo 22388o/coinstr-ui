@@ -120,7 +120,6 @@ async function newMessage (message) {
 async function getMessagesFromAccount ({ hexPublicKey }) {
   try {
     const { messages } = await getMessages({ hexPublicKey }, newMessage)
-    console.log('messages', messages)
     if (!messages || !messages?.length === 0) return
 
     // Messages filtered by current Account
@@ -132,7 +131,7 @@ async function getMessagesFromAccount ({ hexPublicKey }) {
       try {
         plainText = await decryptMessage({ message: content })
         msg.plainText = plainText
-        console.log({ msg })
+        // console.log({ msg })
         addOwnMessage({ message: msg })
       } catch (e) {
         console.error(e)
@@ -163,7 +162,7 @@ function validatePolicy (code) {
 }
 
 function onSuccessPublish (response) {
-  console.log('onSuccessPublish', { response })
+  // console.log('onSuccessPublish', { response })
 }
 
 // Computed
