@@ -16350,6 +16350,11 @@ timers-browserify@^2.0.12, timers-browserify@^2.0.4:
   dependencies:
     setimmediate "^1.0.4"
 
+tlalocman-bdk-wasm@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/tlalocman-bdk-wasm/-/tlalocman-bdk-wasm-0.1.0.tgz#eceac461939e73d1b2ab46a10833f22b04a668df"
+  integrity sha512-dmIl8IlEoZx7fs/7I/4nGUUi2mDCza5OT+kWaE+Zb6eq7liPnXOm7h6GWAPS9XATGLIn8vXIjD7a7Nqwacxyew==
+
 tmp@^0.0.33:
   version "0.0.33"
   resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.0.33.tgz#6d34335889768d21b2bcda0aa277ced3b1bfadf9"
