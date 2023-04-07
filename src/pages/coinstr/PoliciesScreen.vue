@@ -45,18 +45,23 @@
     )
   q-dialog(v-model="showPolicies")
     policy-list(
-      :policies="policies"
+      :policies="policiesArray.data"
       @onSubmit="loadPolicy"
     )
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, reactive } from 'vue'
+// eslint-disable-next-line import/no-duplicates
+import init from 'tlalocman-bdk-wasm'
 import CoinstrBlockly from '~/components/coinstr/coinstr-blockly'
+
 import UsersList from '~/components/coinstr/users-list.vue'
 import { useNostr, useNotifications } from '~/composables'
 import { useStore } from 'vuex'
 import PolicyForm from '~/components/policy/policy-form.vue'
+import policyList from '~/components/policy/policy-list.vue'
+
 const $store = useStore()
 const {
   getContacts,
@@ -84,7 +89,9 @@ const searchContacts = ref(undefined)
 const showPolicyForm = ref(false)
 const showPolicies = ref(false)
 
-const policies = ref([])
+const policiesArray = reactive({
+  data: []
+})
 
 const isLoggedInNostr = computed(() => $store.getters['nostr/isLoggedInNostr'])
 const myPublicKey = ref(undefined)
@@ -102,6 +109,8 @@ watch(isLoggedInNostr, async function (v) {
 
 onMounted(async () => {
   try {
+    await init()
+    // console.log({ from: fromMiniscriptPolicy('thresh(2,pk(5e61551ceb04521181d9ad40295e32dce5dc5609c4612a3239dbc60c30080dcd),pk(d223b67e6091ef0665188a4016d20a51a7bbb1b240fafc4429bf139527338d1))') })
     loadContacts()
   } catch (e) {
     console.error(e)
@@ -215,7 +224,7 @@ async function onSavePolicy ({ name, description }) {
     const _policy = {
       name,
       description,
-      descriptor: textDom,
+      miniscript: policy.value,
       uiMetadata: {
         json: textDom,
         policyCode: policy.value,
@@ -223,14 +232,16 @@ async function onSavePolicy ({ name, description }) {
       }
     }
     // Save to local storage
-    localStorage.setItem('savedPolicy', JSON.stringify(_policy))
+    // localStorage.setItem('savedPolicy', JSON.stringify(_policy))
 
     // Send message to nostr
     // await sendMessage({ message, toPublickKey }, onSuccessPublish)
 
     // Save Policy using Nostr Event
     try {
-      await savePolicy(_policy)
+      const { policies } = await savePolicy(_policy)
+      const _policies = policies.map(policy => policy?.plainText)
+      policiesArray.data = [..._policies]
     } catch (error) {
       handlerError(error)
     }
@@ -244,7 +255,11 @@ async function onSavePolicy ({ name, description }) {
 async function onLoadPolicy () {
   let openModal
   let response
-
+  if (policiesArray.data && policiesArray.data.length > 0) {
+    showPolicies.value = true
+    console.log('policiesArray.data', policiesArray.data)
+    return
+  }
   try {
     showLoading()
     response = await getPoliciesByAccount()
@@ -253,13 +268,14 @@ async function onLoadPolicy () {
     handlerError(error)
     openModal = false
     response = []
+  } finally {
+    hideLoading()
   }
 
-  policies.value = response
-
-  openModal
-    ? showPolicies.value = true
-    : handlerError('No policies found')
+  if (openModal) {
+    policiesArray.value = response?.map(policy => policy?.plainText)
+    showPolicies.value = true
+  } else { handlerError('No policies found') }
 }
 
 /**
@@ -267,11 +283,10 @@ async function onLoadPolicy () {
  * @description Loads a previously saved policy from local storage.
  * @returns {void}
  */
-async function loadPolicy ({ policy }) {
+async function loadPolicy (policy) {
   try {
-    console.log({ policy })
     showLoading()
-    const { uiMetadata } = JSON.parse(policy) || {}
+    const { uiMetadata } = policy || {}
     const { json, keys } = uiMetadata || {}
 
     keys.forEach(key => {
