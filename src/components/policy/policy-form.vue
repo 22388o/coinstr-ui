@@ -1,20 +1,18 @@
 <template lang='pug'>
 q-card.full-width
   q-card-section
+    .text-h5.q-pl-lg.q-py-lg Policy Form
     q-form(ref="form")
-      pre {{ policy }}
       q-input.q-py-md.q-px-lg(
         outlined
         v-model="policy.name"
         label="Policy name"
-        placeholder="Policy name"
         :rules="[rules.required]"
       )
       q-input.q-py-md.q-px-lg(
         outlined
         v-model="policy.description"
         label="Policy description"
-        placeholder="Policy description"
         :rules="[rules.required]"
       )
       q-btn.q-my-md.q-mx-lg(

@@ -129,11 +129,11 @@ export const useNostr = () => {
     }
   }
   // Policy Feature
-  const savePolicy = async ({ name, description, descriptor, uiMetadata }) => {
+  const savePolicy = async ({ name, description, miniscript, uiMetadata }) => {
     const policy = {
       name,
       description,
-      descriptor,
+      miniscript,
       uiMetadata
     }
     console.log({ policy })
@@ -151,7 +151,7 @@ export const useNostr = () => {
 
     const { hex } = getActiveAccount.value
 
-    await nostrApi.savePolicy({ name, description, descriptor, uiMetadata, pubKey: hex })
+    return await nostrApi.savePolicy({ name, description, miniscript, uiMetadata, pubKey: hex })
   }
   // Message Feature
 
