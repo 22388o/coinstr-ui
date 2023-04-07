@@ -1,4 +1,3 @@
-import nostr from 'src/store/nostr'
 import {
   computed
 } from 'vue'
@@ -129,7 +128,31 @@ export const useNostr = () => {
       throw new Error('Error fetching data')
     }
   }
+  // Policy Feature
+  const savePolicy = async ({ name, description, descriptor, uiMetadata }) => {
+    const policy = {
+      name,
+      description,
+      descriptor,
+      uiMetadata
+    }
+    console.log({ policy })
+    const isValidMessage = (policy) => {
+      const values = Object.values(policy)
+      const isValid = values?.every(value => !!value)
 
+      const { uiMetadata } = policy || {}
+      const uiMetadataValues = Object.values(uiMetadata)
+
+      return isValid && uiMetadataValues?.every(value => !!value)
+    }
+
+    if (!isValidMessage(policy)) throw new Error('Invalid policy')
+
+    const { hex } = getActiveAccount.value
+
+    await nostrApi.savePolicy({ name, description, descriptor, uiMetadata, pubKey: hex })
+  }
   // Message Feature
 
   /** Sends an encrypted message to a recipient specified by their public key
@@ -348,6 +371,7 @@ export const useNostr = () => {
     subscriptionToMessages,
     decryptMessage,
     addOwnMessage,
-    getPoliciesByAccount
+    getPoliciesByAccount,
+    savePolicy
   }
 }

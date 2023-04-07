@@ -1,5 +1,5 @@
 <template lang='pug'>
-q-item
+q-item(test data-testid="userItem")
   q-item-section(top avatar)
     q-img.img(v-if="isValidPicture" :src="_user.picture" width="50px" height="50px")
     q-avatar.img(v-else color="secondary" text-color="white" font-size="15px" size="50px") User
@@ -27,6 +27,7 @@ q-item
       :label="policyButtonLabel"
       no-caps
       @click="updateToPolicy"
+      data-testid="interactWithPolicyBtn"
     )
 </template>
 <script setup>
@@ -43,13 +44,13 @@ const props = defineProps({
   user: {
     type: Object,
     default: () => ({
-      about: 'Water well',
-      name: 'Amanda',
-      nip05: 'amanda@waterwell.ngo',
-      npub: 'npub1phvpqfd8hq7x7set0tlpty2p0fq8fvhxfwvzfxg2fatsn66kvvsq2tag8v',
-      picture: 'https://waterwell.ngo/profiles/amanda.png',
-      banner: 'https://nostr.build/i/nostr.build_e34050e635c540aa737baef0ae9637b90469b8b5c7102209e95de6eb32e4b7a1.jpeg',
-      lud06: 'lnbc1pjpr7k2pp5p8u3h6a9k8r0gffrt8t3zd2s7glmqg262wlvlsyfj8p73tdztl4qdqqcqzzgxqyz5vqrzjqwnvuc0u4txn35cafc7w94gxvq5p3cu9dd95f7hlrh0fvs46wpvhdldjcfs3eg3jr5qqqqryqqqqthqqpyrzjqw8c7yfutqqy3kz8662fxutjvef7q2ujsxtt45csu0k688lkzu3ldldjcfs3eg3jr5qqqqryqqqqthqqpysp5y9uwpnqspjmxpngwull43q5rnktuvaq0etpth0kzpsnmeg3r48lq9qypqsqu0wyhfvz0p5nnqqawh84pppw75w4r2w9uu9av4pvwech6n7zygnxd5jxd2m0l2ru8qq8e9tnhxdva36xevv8nlhgtt6t830rngqk3pqqgkv0uh',
+      about: '',
+      name: '',
+      nip05: '',
+      npub: '',
+      picture: '',
+      banner: '',
+      lud06: '',
       isSelectable: false
     })
   },
@@ -80,6 +81,8 @@ const isValidURL = (url) => {
 }
 const getNpub = computed(() => {
   const npub = _user.value.npub
+  if (!npub) return ''
+
   const prefix = 'npub'
   return {
     raw: npub,

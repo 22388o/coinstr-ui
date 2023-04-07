@@ -102,6 +102,7 @@ onMounted(() => {
       const code = generateCode()
       emits('onChangedPolicy', code)
     })
+    workspace.scrollbar.dispose()
   } catch (e) {
     handlerError(e)
   }
@@ -134,7 +135,9 @@ const generateCode = () => {
 */
 const saveWorkspace = () => {
   const workspace = Blockly.getMainWorkspace()
-  return Blockly.Xml.workspaceToDom(workspace)
+  const json = Blockly.serialization.workspaces.save(workspace)
+  // const xml = Blockly.Xml.workspaceToDom(workspace)
+  return json
 }
 
 /**
@@ -143,11 +146,12 @@ const saveWorkspace = () => {
 @param {String} textDom - An XML object representing a previous state of the Blockly workspace
 @returns {void}
 */
-const loadWorkspace = (textDom) => {
+const loadWorkspace = (json) => {
   const workspace = Blockly.getMainWorkspace()
   workspace.clear()
-  const xml = Blockly.Xml.textToDom(textDom)
-  Blockly.Xml.domToWorkspace(xml, workspace)
+  // const xml = Blockly.Xml.textToDom(textDom)
+  // Blockly.Xml.domToWorkspace(xml, workspace)
+  Blockly.serialization.workspaces.load(json, workspace)
 }
 
 // Debugger function
@@ -552,7 +556,7 @@ const loadBlockly = () => {
   defineCodeGeneration()
 
   // Inject blockly settings on DOM
-  Blockly.inject('blocklyContainer', { toolbox })
+  Blockly.inject('blocklyContainer', { toolbox, scrollbar: false })
   console.warn('Blockly was injected')
 
   // Set in workspace begin block
@@ -577,4 +581,5 @@ defineExpose({
 #blocklyContainer
   width: 100%
   height: 78vh
+  overflow: hidden
 </style>

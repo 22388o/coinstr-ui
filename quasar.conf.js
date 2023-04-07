@@ -215,9 +215,9 @@ module.exports = configure(function (ctx) {
       },
 
       manifest: {
-        name: 'COINSTR - Portal',
-        short_name: 'COINSTR - Portal',
-        description: 'This is a template developed by HASHED',
+        name: 'Coinstr',
+        short_name: 'Coinstr',
+        description: 'Bitcoin multi-custody signature orchestration',
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#ffffff',

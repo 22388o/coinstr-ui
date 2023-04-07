@@ -6,15 +6,7 @@ import { ref } from 'vue'
 export default {
   title: 'Common/HInput',
   component: HInput,
-  argTypes: {
-    type: {
-      name: 'type',
-      control: {
-        type: 'select',
-        options: ['text', 'textarea']
-      }
-    }
-  }
+  argTypes: {}
 }
 
 const Template = (args) => ({
@@ -52,6 +44,6 @@ BaseInput.args = {
 
 BaseInput.play = async ({ args, canvasElement }) => {
   const canvas = within(canvasElement)
-  const input = canvas.getByTestId('HInput')
+  const input = canvas.getByTestId('userItem')
   await userEvent.type(input, 'Example', { delay: 10 })
 }

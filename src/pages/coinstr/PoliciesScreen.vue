@@ -18,12 +18,12 @@
           q-btn(
             label="Save policy"
             color="primary"
-            @click="savePolicy"
+            @click="showPolicyForm = true"
           )
           q-btn(
             label="Load policy"
             color="secondary"
-            @click="loadPolicy"
+            @click="onLoadPolicy"
           )
     .col.q-pl-md
       template(v-if="isLoggedInNostr")
@@ -39,6 +39,15 @@
         users-list.list(v-model="contacts" :loading="contacts === undefined" :search="searchContacts")
       template(v-else)
         .text-body2.text-center.q-mt-md Please log in with your NOSTR account to see your contacts and add them to Policy.
+  q-dialog(v-model="showPolicyForm")
+    policy-form(
+      @onSubmit="onSavePolicy"
+    )
+  q-dialog(v-model="showPolicies")
+    policy-list(
+      :policies="policies"
+      @onSubmit="loadPolicy"
+    )
 </template>
 
 <script setup>
@@ -47,6 +56,7 @@ import CoinstrBlockly from '~/components/coinstr/coinstr-blockly'
 import UsersList from '~/components/coinstr/users-list.vue'
 import { useNostr, useNotifications } from '~/composables'
 import { useStore } from 'vuex'
+import PolicyForm from '~/components/policy/policy-form.vue'
 const $store = useStore()
 const {
   getContacts,
@@ -56,6 +66,7 @@ const {
   decryptMessage,
   addOwnMessage,
   getPoliciesByAccount,
+  savePolicy,
   subscriptionToMessages
 } = useNostr()
 
@@ -70,15 +81,20 @@ const policy = ref(undefined)
 const contacts = ref(undefined)
 const searchContacts = ref(undefined)
 
+const showPolicyForm = ref(false)
+const showPolicies = ref(false)
+
+const policies = ref([])
+
 const isLoggedInNostr = computed(() => $store.getters['nostr/isLoggedInNostr'])
 const myPublicKey = ref(undefined)
 let messageSubscriptions
 
 watch(isLoggedInNostr, async function (v) {
   try {
-    const policies = await getPoliciesByAccount()
+    // const policies = await getPoliciesByAccount()
     loadContacts()
-    await getMessagesFromAccount({ hexPublicKey: getActiveAccount.value.hex })
+    // await getMessagesFromAccount({ hexPublicKey: getActiveAccount.value.hex })
   } catch (e) {
     console.error(e)
   }
@@ -162,7 +178,7 @@ function validatePolicy (code) {
 }
 
 function onSuccessPublish (response) {
-  console.log('onSuccessPublish', { response })
+  // console.log('onSuccessPublish', { response })
 }
 
 // Computed
@@ -183,48 +199,41 @@ const eligiblesContacts = computed(() => {
 })
 
 // Save and load policies
-
 /**
  * @name savePolicy
  * @description Saves the current workspace to local storage as a policy.
  * @returns {void}
  */
-async function savePolicy () {
+async function onSavePolicy ({ name, description }) {
   try {
+    showPolicyForm.value = false
     showLoading()
     const textDom = blocklyRef.value.saveWorkspace()
-    const serializer = new XMLSerializer()
-    const xmlString = serializer.serializeToString(textDom)
+    const keys = eligiblesContacts.value.map(user => user.pk)
 
-    const message = {
-      name: 'MultiSig 2 of 2',
-      description: 'Testing multisig as part of the Coinstr CLI tutorial',
-      outputDescriptor: 'thresh(2,pk(b16a94bddab7bf6a85de08d0ad6fe601418270598509ac6a23b7ba92c1015705),pk(d62408188ab170d846028cd4fc61c47989cd1fb15bf5cb5d1d37016d85866bfb))',
+    // const message = { json: textDom, policyCode: policy.value, keys }
+    const _policy = {
+      name,
+      description,
+      descriptor: textDom,
       uiMetadata: {
-        xml: xmlString,
+        json: textDom,
         policyCode: policy.value,
-        keys: [eligiblesContacts.value]
+        keys
       }
     }
-    const { npub } = getActiveAccount.value || {}
-    const toPublickKey = npub
+    // Save to local storage
+    localStorage.setItem('savedPolicy', JSON.stringify(_policy))
 
-    if (!message || !toPublickKey) return
+    // Send message to nostr
+    // await sendMessage({ message, toPublickKey }, onSuccessPublish)
 
+    // Save Policy using Nostr Event
     try {
-      const { hex } = getActiveAccount.value
-      const response = await $store.$nostrApi.savePolicy({
-        name: message?.name,
-        description: message?.description,
-        descriptor: message?.outputDescriptor,
-        uiMetadata: message?.uiMetadata,
-        pubKey: hex
-      })
+      await savePolicy(_policy)
     } catch (error) {
       handlerError(error)
     }
-
-    // await sendMessage({ message, toPublickKey }, onSuccessPublish)
   } catch (e) {
     console.error(e)
     handlerError(e)
@@ -232,28 +241,59 @@ async function savePolicy () {
     hideLoading()
   }
 }
+async function onLoadPolicy () {
+  let openModal
+  let response
+
+  try {
+    showLoading()
+    response = await getPoliciesByAccount()
+    openModal = response?.length > 0
+  } catch (error) {
+    handlerError(error)
+    openModal = false
+    response = []
+  }
+
+  policies.value = response
+
+  openModal
+    ? showPolicies.value = true
+    : handlerError('No policies found')
+}
 
 /**
  * @name loadPolicy
  * @description Loads a previously saved policy from local storage.
  * @returns {void}
  */
-function loadPolicy () {
+async function loadPolicy ({ policy }) {
   try {
+    console.log({ policy })
     showLoading()
-    const savedPolicy = localStorage.getItem('savedPolicy')
-    const { xmlString, users } = JSON.parse(savedPolicy)
-    users.forEach(policyUser => {
-      const isALoadedUser = !!eligiblesContacts.value.find(v => v.bitcoinAddress === policyUser.bitcoinAddress)
+    const { uiMetadata } = JSON.parse(policy) || {}
+    const { json, keys } = uiMetadata || {}
+
+    keys.forEach(key => {
+      const isALoadedUser = !!eligiblesContacts.value.find(v => v.bitcoinAddress === key)
       if (!isALoadedUser) {
-        const contactOnList = contacts.value.find(v => v.bitcoinAddress === policyUser.bitcoinAddress)
+        const contactOnList = contacts.value?.find(v => v.bitcoinAddress === key)
         if (contactOnList) {
           contactOnList.isSelectable = true
-        } else contacts.value = contacts.value.concat(policyUser)
+        } else {
+          contacts.value = contacts.value?.concat([
+            {
+              bitcoinAddress: key,
+              name: `${key.substring(0, 8)}...${key.substring(key.length - 8)}`,
+              display_name: `${key.substring(0, 5)}...${key.substring(key.length - 5)}`,
+              isSelectable: true
+            }
+          ])
+        }
       }
     })
     setTimeout(() => {
-      blocklyRef.value.loadWorkspace(xmlString)
+      blocklyRef.value.loadWorkspace(json)
     }, 500)
   } catch (e) {
     console.error(e)

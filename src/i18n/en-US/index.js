@@ -6,6 +6,7 @@ export default {
   success: 'Action was successful',
   forms: {
     errors: {
+      required: 'This field is required',
       isValidRelay: 'The relay is not valid'
     }
   },

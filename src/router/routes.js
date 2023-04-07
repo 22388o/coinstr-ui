@@ -1,6 +1,6 @@
 const routes = [
   {
-    // COINSTR
+    // Coinstr
     name: 'coinstr',
     path: '',
     component: () => import('layouts/CoinstrLayout.vue'),

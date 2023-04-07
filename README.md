@@ -1,4 +1,4 @@
-# COINSTR Portal
+# Coinstr Portal
 
 ## Quick Start
 ```bash
