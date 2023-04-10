@@ -271,6 +271,29 @@ class NostrApi {
     }
   }
 
+  async subscribeToPolicies ({ pubkey }, subTrigger) {
+    const event = {
+      kinds: [EventKind.SHARED_KEY],
+      authors: [pubkey],
+      since: Math.floor(Date.now() / 1000)
+    }
+
+    let sub
+    try {
+      sub = await this.pool.sub(this.relays, [event])
+    } catch (err) {
+      console.error(err)
+      return
+    }
+
+    sub.on('error', console.error)
+    sub.on('event', (event) => {
+      subTrigger(event)
+    })
+
+    return sub
+  }
+
   extractPublicKeys (miniscript) {
     const regex = /pk\(([^)]+)\)/g // Regular expression to match public keys
     const matches = miniscript.match(regex) // Find all matches in the input string
@@ -361,6 +384,19 @@ class NostrApi {
       throw new Error(error)
     }
   }
+
+  // async getPolicy ({ policyId }) {
+  //   try {
+  //     const event = {
+  //       kinds: [EventKind.POLICY],
+  //       ids: [policyId]
+  //     }
+  //     const policy = await this.pool.list(this.relays, [event])
+  //     console.log({ policy })
+  //   } catch (error) {
+  //     throw new Error(error)
+  //   }
+  // }
 
   async subscriptionToMessages ({ hexPublicKey }, subTrigger) {
     const event = {

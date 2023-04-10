@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, reactive } from 'vue'
+import { ref, onMounted, computed, watch, reactive, onBeforeUnmount } from 'vue'
 // eslint-disable-next-line import/no-duplicates
 import init from 'tlalocman-bdk-wasm'
 import CoinstrBlockly from '~/components/blockly/coinstr-blockly'
@@ -71,8 +71,10 @@ const {
   decryptMessage,
   addOwnMessage,
   getPoliciesByAccount,
+  getPolicy,
   savePolicy,
-  subscriptionToMessages
+  subscriptionToMessages,
+  subscribeToPolicies
 } = useNostr()
 
 const {
@@ -97,11 +99,15 @@ const policiesArray = reactive({
 const isLoggedInNostr = computed(() => $store.getters['nostr/isLoggedInNostr'])
 const myPublicKey = ref(undefined)
 let messageSubscriptions
+let policiesSubscription
 
 watch(isLoggedInNostr, async function (v) {
+  if (!isLoggedInNostr.value) return
+
   try {
     loadContacts()
     // await getMessagesFromAccount({ hexPublicKey: getActiveAccount.value.hex })
+    await subscriptionToPolicies()
   } catch (e) {
     console.error(e)
   }
@@ -116,7 +122,14 @@ onMounted(async () => {
     console.error(e)
   }
 })
-
+onBeforeUnmount(() => {
+  if (messageSubscriptions) {
+    messageSubscriptions.unsub()
+  }
+  if (policiesSubscription) {
+    policiesSubscription.unsub()
+  }
+})
 /**
  * @async
  * @name loadContacts
@@ -210,6 +223,36 @@ const eligiblesContacts = computed(() => {
 })
 
 // Save and load policies
+const subscriptionToPolicies = async () => {
+  try {
+    const sub = await subscribeToPolicies(onNewPolicy)
+    console.log({ sub })
+    policiesSubscription = sub
+  } catch (error) {
+    handlerError(error)
+  }
+}
+
+let lastPolicy = null // Variable to store the last policy object
+let debounceTimeout = null // Variable to store the timeout ID for debounce
+
+const onNewPolicy = (policy) => {
+  // Cancel the previous debounce timeout
+  clearTimeout(debounceTimeout)
+
+  // Set a new debounce timeout
+  debounceTimeout = setTimeout(async () => {
+    // Update the last policy object
+    lastPolicy = policy
+
+    // Perform your desired action with the last policy object
+    console.log({ lastPolicy })
+    const response = await getPoliciesByAccount()
+    showNotification({ message: 'New policy found', color: 'positive' })
+    const _policies = response?.map(policy => policy?.plainText)
+    policiesArray.data = [..._policies]
+  }, 300) // Set a desired debounce delay in milliseconds (e.g., 300ms)
+}
 /**
  * @name savePolicy
  * @description Saves the current workspace to local storage as a policy.

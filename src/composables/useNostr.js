@@ -198,6 +198,11 @@ export const useNostr = () => {
   const subscriptionToMessages = async ({ hexPublicKey }, subTrigger) => {
     return nostrApi.subscriptionToMessages({ hexPublicKey }, subTrigger)
   }
+  const subscribeToPolicies = async (subTrigger) => {
+    const { hex: pubkey } = getActiveAccount.value
+    const sub = await nostrApi.subscribeToPolicies({ pubkey }, subTrigger)
+    return sub
+  }
 
   /**
    * Create a metadata string [Message to send] from the given data.
@@ -255,6 +260,9 @@ export const useNostr = () => {
     const { hex } = getActiveAccount.value
     return nostrApi.getPoliciesByAccount({ pubkey: hex })
   }
+  // const getPolicy = async (policyId) => {
+  //   return nostrApi.getPolicy({ policyId })
+  // }
   const isNpub = (key) => {
     const npubIdentifier = 'npub'
     return key?.substring(0, npubIdentifier.length) === npubIdentifier
@@ -368,9 +376,11 @@ export const useNostr = () => {
     sendMessage,
     getMessages,
     subscriptionToMessages,
+    subscribeToPolicies,
     decryptMessage,
     addOwnMessage,
     getPoliciesByAccount,
+    // getPolicy,
     savePolicy
   }
 }
