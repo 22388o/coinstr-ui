@@ -257,7 +257,6 @@ async function onLoadPolicy () {
   let response
   if (policiesArray.data && policiesArray.data.length > 0) {
     showPolicies.value = true
-    console.log('policiesArray.data', policiesArray.data)
     return
   }
   try {
@@ -273,7 +272,7 @@ async function onLoadPolicy () {
   }
 
   if (openModal) {
-    policiesArray.value = response?.map(policy => policy?.plainText)
+    policiesArray.data = response?.map(policy => policy?.plainText)
     showPolicies.value = true
   } else { handlerError('No policies found') }
 }

@@ -2,7 +2,7 @@
 q-card.full-width
   .text-h5.q-pa-md Policies
   .row(v-for="(policy,index) in policies")
-    q-item.col-12(clickable @click="onSubmit(policy)")
+    q-item.col-12(:clickable="!!policy?.uiMetadata" @click="onSubmit(policy)")
       q-item-section
         q-item-label
           | {{ policy.name }}
@@ -14,7 +14,8 @@ import {
   defineProps,
   defineEmits,
   toRefs,
-  toRaw
+  toRaw,
+  computed
 } from 'vue'
 // props
 const props = defineProps({
