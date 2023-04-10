@@ -136,7 +136,6 @@ export const useNostr = () => {
       miniscript,
       uiMetadata
     }
-    console.log({ policy })
     const isValidMessage = (policy) => {
       const values = Object.values(policy)
       const isValid = values?.every(value => !!value)

@@ -78,7 +78,8 @@ const {
 const {
   handlerError,
   showLoading,
-  hideLoading
+  hideLoading,
+  showNotification
 } = useNotifications()
 
 const blocklyRef = ref(undefined)
@@ -99,7 +100,6 @@ let messageSubscriptions
 
 watch(isLoggedInNostr, async function (v) {
   try {
-    // const policies = await getPoliciesByAccount()
     loadContacts()
     // await getMessagesFromAccount({ hexPublicKey: getActiveAccount.value.hex })
   } catch (e) {
@@ -126,6 +126,7 @@ onMounted(async () => {
 const currentOwnMessages = computed(() => $store.getters['nostr/getOwnMessages'])
 const newMessages = []
 
+// Example of how message works
 async function newMessage (message) {
   const toAccount = message?.tags?.[0]?.[1]
 
@@ -143,6 +144,7 @@ async function newMessage (message) {
 
   addOwnMessage({ message })
 }
+// Example of how message works
 async function getMessagesFromAccount ({ hexPublicKey }) {
   try {
     const { messages } = await getMessages({ hexPublicKey }, newMessage)
@@ -239,10 +241,10 @@ async function onSavePolicy ({ name, description }) {
 
     // Save Policy using Nostr Event
     try {
-      const { policies } = await savePolicy(_policy)
-      const _policies = policies.map(policy => policy?.plainText)
-      policiesArray.data = [..._policies]
+      await savePolicy(_policy)
+      showNotification({ message: 'Policy saved successfully', color: 'positive' })
     } catch (error) {
+      console.error(error)
       handlerError(error)
     }
   } catch (e) {
@@ -272,7 +274,9 @@ async function onLoadPolicy () {
   }
 
   if (openModal) {
-    policiesArray.data = response?.map(policy => policy?.plainText)
+    showNotification({ message: 'Policies loaded successfully', color: 'positive' })
+    const _policies = response?.map(policy => policy?.plainText)
+    policiesArray.data = [..._policies]
     showPolicies.value = true
   } else { handlerError('No policies found') }
 }

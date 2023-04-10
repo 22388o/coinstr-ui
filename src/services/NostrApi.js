@@ -155,6 +155,16 @@ class NostrApi {
     }
   }
 
+  /**
+   *
+   * Method to handle the policy creation
+   * @param {String} name
+   * @param {String} description
+   * @param {String} miniscript
+   * @param {Object} uiMetadata
+   * @param {String} pubKey
+   * @returns
+   */
   // TODO: Add the logic when the user enter their private key
   async savePolicy ({ name, description, miniscript, uiMetadata, pubKey }) {
     try {
@@ -222,15 +232,17 @@ class NostrApi {
       }
 
       await this.publishPolicy({ policyEvent: event, sharedKeysEvents })
-
-      const policies = await this.getPoliciesByAccount({ pubkey: pubKey }, [event], sharedKeysEvents)
-
-      return { policies }
     } catch (error) {
       throw new Error(error)
     }
   }
 
+  /**
+   * Publish the policy events to the relays
+   * @param {object} policyEvent
+   * @param {object} sharedKeysEvents
+   * @returns {Promise<void>}
+   */
   async publishPolicy ({ policyEvent, sharedKeysEvents }) {
     try {
       const pubPolicy = await this.pool.publish(this.relays, policyEvent)
