@@ -385,19 +385,6 @@ class NostrApi {
     }
   }
 
-  // async getPolicy ({ policyId }) {
-  //   try {
-  //     const event = {
-  //       kinds: [EventKind.POLICY],
-  //       ids: [policyId]
-  //     }
-  //     const policy = await this.pool.list(this.relays, [event])
-  //     console.log({ policy })
-  //   } catch (error) {
-  //     throw new Error(error)
-  //   }
-  // }
-
   async subscriptionToMessages ({ hexPublicKey }, subTrigger) {
     const event = {
       kinds: [EventKind.DM],

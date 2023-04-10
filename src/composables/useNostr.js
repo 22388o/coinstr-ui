@@ -260,9 +260,6 @@ export const useNostr = () => {
     const { hex } = getActiveAccount.value
     return nostrApi.getPoliciesByAccount({ pubkey: hex })
   }
-  // const getPolicy = async (policyId) => {
-  //   return nostrApi.getPolicy({ policyId })
-  // }
   const isNpub = (key) => {
     const npubIdentifier = 'npub'
     return key?.substring(0, npubIdentifier.length) === npubIdentifier
