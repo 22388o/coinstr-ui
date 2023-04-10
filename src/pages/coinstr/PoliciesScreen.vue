@@ -54,9 +54,9 @@
 import { ref, onMounted, computed, watch, reactive } from 'vue'
 // eslint-disable-next-line import/no-duplicates
 import init from 'tlalocman-bdk-wasm'
-import CoinstrBlockly from '~/components/coinstr/coinstr-blockly'
+import CoinstrBlockly from '~/components/blockly/coinstr-blockly'
 
-import UsersList from '~/components/coinstr/users-list.vue'
+import UsersList from '~/components/users/users-list.vue'
 import { useNostr, useNotifications } from '~/composables'
 import { useStore } from 'vuex'
 import PolicyForm from '~/components/policy/policy-form.vue'

@@ -4,6 +4,7 @@
     bordered
     separator
     v-if="loading"
+    data-testid="UsersListSkeleton"
   )
     q-item.full-width(v-for="n in 8")
       q-item-section(avatar)
