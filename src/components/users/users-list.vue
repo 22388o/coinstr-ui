@@ -19,7 +19,7 @@
     bordered
     separator
   )
-    user-item(
+    user-item.item--bordered(
       role="userItem"
       v-if="showList"
       v-for="user in filteredUsers"
@@ -72,7 +72,7 @@ function removeUserToPolicy (user) {
 
 const showList = computed(() => {
   if (!_users.value) return false
-  if (Object.entries(_users).length > 0 && loading.value === false) return true
+  if (Object.entries(_users)?.length > 0 && loading.value === false) return true
   return false
 })
 
@@ -86,3 +86,9 @@ const filteredUsers = computed(() => {
 })
 
 </script>
+<style lang='stylus' scoped>
+@import '~/css/colors.styl'
+.item
+  &--bordered
+    border: 1px solid $grayDark2
+</style>

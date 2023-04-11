@@ -102,7 +102,8 @@ export const useNostr = () => {
       promises.push(requestContacts({ relay, publicKey }))
     })
     const contacts = await Promise.all(promises)
-    const _contacts = contacts.map(contact => contact.contacts)
+    if (contacts?.length === 0) return []
+    const _contacts = contacts.map(contact => contact?.contacts)
     return helperFilterContacts(_contacts)
   }
   const requestContacts = async ({ relay, publicKey }) => {
@@ -119,14 +120,38 @@ export const useNostr = () => {
             value.bitcoinAddress = key
           }
         }
-
+        if (!contacts) return undefined
         return { contacts }
       }
     } catch (error) {
       console.error('Error fetching data:', error)
+      throw new Error('Error fetching data')
     }
   }
+  // Policy Feature
+  const savePolicy = async ({ name, description, miniscript, uiMetadata }) => {
+    const policy = {
+      name,
+      description,
+      miniscript,
+      uiMetadata
+    }
+    const isValidMessage = (policy) => {
+      const values = Object.values(policy)
+      const isValid = values?.every(value => !!value)
 
+      const { uiMetadata } = policy || {}
+      const uiMetadataValues = Object.values(uiMetadata)
+
+      return isValid && uiMetadataValues?.every(value => !!value)
+    }
+
+    if (!isValidMessage(policy)) throw new Error('Invalid policy')
+
+    const { hex } = getActiveAccount.value
+
+    return await nostrApi.savePolicy({ name, description, miniscript, uiMetadata, pubKey: hex })
+  }
   // Message Feature
 
   /** Sends an encrypted message to a recipient specified by their public key
@@ -141,10 +166,14 @@ export const useNostr = () => {
 */
   const sendMessage = async ({ toPublickKey, message }, subTrigger) => {
     const { hex, npub } = getActiveAccount.value
-
+    const { name, description, outputDescriptor, uiMetadata } = message || {}
     const { data: toHexKey } = NpubToHex(toPublickKey)
-
-    const _message = createMessage({ app: 'coinstr', type: 'policy', data: message })
+    const _message = createMessage({
+      name,
+      description,
+      output_descriptor: outputDescriptor,
+      ui_metadata: uiMetadata
+    })
     const ciphertext = await nostrApi.encryptMessage({ publicKey: toHexKey, message: _message })
 
     const pubs = await nostrApi.sendMessage({
@@ -169,30 +198,26 @@ export const useNostr = () => {
   const subscriptionToMessages = async ({ hexPublicKey }, subTrigger) => {
     return nostrApi.subscriptionToMessages({ hexPublicKey }, subTrigger)
   }
+  const subscribeToPolicies = async (subTrigger) => {
+    const { hex: pubkey } = getActiveAccount.value
+    const sub = await nostrApi.subscribeToPolicies({ pubkey }, subTrigger)
+    return sub
+  }
 
   /**
    * Create a metadata string [Message to send] from the given data.
    *
-   * @param {object} options - The options object.
-   * @param {string} options.app - The name of the app. [Coinstr]
-   * @param {string} options.type - The type of the message. [Policy]
-   * @param {object} options.data - The data to include in the message.
+   * @param {object} Object - The options object.
    *
    * @returns {string} The metadata string.
    */
-  const createMessage = ({ app, type, data }) => {
-    const metadata = {
-      app,
-      type,
-      message: JSON.stringify(data)
-    }
 
-    let metadataString = ''
-    for (const [key, value] of Object.entries(metadata)) {
-      metadataString += `#${encodeURIComponent(key)}:${encodeURIComponent(value)}`
+  const createMessage = (obj) => {
+    try {
+      return JSON.stringify(obj)
+    } catch (e) {
+      throw new Error('Invalid object')
     }
-
-    return metadataString
   }
   /**
    * Decrypts a message using the active account's public key and returns the metadata as an object.
@@ -219,31 +244,21 @@ export const useNostr = () => {
    * @returns {object|undefined} An object containing the metadata key-value pairs, or undefined if parsing failed.
    */
   const getMetadataFromString = (metadataString) => {
-    if (!metadataString && metadataString === '') return undefined
-
-    const metadata = {}
-
-    const parts = metadataString?.split('#')
-    const _parts = parts?.filter(part => part !== '')
-
-    if (!_parts || _parts.length === 0) return undefined
-
-    _parts.forEach(part => {
-      const [key, value] = part?.split(':')
-      try {
-        metadata[decodeURIComponent(key)] = decodeURIComponent(value)
-      } catch (e) {
-        return undefined
-      }
-    })
-
     try {
-      metadata.message = JSON.parse(metadata.message)
-    } catch (e) {
-      return undefined
+      return JSON.parse(metadataString)
+    } catch (error) {
+      console.error(error)
+      throw new Error('Error parsing metadata string')
     }
-
-    return metadata
+  }
+  /**
+   * Get a list of policies for a given account
+   * @param {Object} params
+   * @param {String} params.pubkey - the account public key
+   */
+  const getPoliciesByAccount = async () => {
+    const { hex } = getActiveAccount.value
+    return nostrApi.getPoliciesByAccount({ pubkey: hex })
   }
   const isNpub = (key) => {
     const npubIdentifier = 'npub'
@@ -358,7 +373,11 @@ export const useNostr = () => {
     sendMessage,
     getMessages,
     subscriptionToMessages,
+    subscribeToPolicies,
     decryptMessage,
-    addOwnMessage
+    addOwnMessage,
+    getPoliciesByAccount,
+    // getPolicy,
+    savePolicy
   }
 }
