@@ -1,7 +1,7 @@
 <template lang='pug'>
 div
-  .label {{ label }}
-  q-input(
+  .label.text-white {{ label }}
+  q-input.c-input.c-input-bg(
     outlined
     v-model="value"
     v-bind="$attrs"

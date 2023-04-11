@@ -1,21 +1,23 @@
 <template lang='pug'>
-q-card.full-width
+q-card.full-width.bg-secondary
   q-card-section
-    .text-h5.q-pl-lg.q-py-lg Policy Form
+    .row.justify-center.text-h5.q-pl-lg.q-py-lg.text-white Policy Form
     q-form(ref="form")
-      q-input.q-py-md.q-px-lg(
+      q-input.c-input.c-input-bg.q-py-md.q-px-lg(
         outlined
         v-model="policy.name"
         label="Policy name"
+        dark
         :rules="[rules.required]"
       )
-      q-input.q-py-md.q-px-lg(
+      q-input.c-input.c-input-bg.q-py-md.q-px-lg(
         outlined
         v-model="policy.description"
         label="Policy description"
+        dark
         :rules="[rules.required]"
       )
-      q-btn.q-my-md.q-mx-lg(
+      q-btn.btn--rounded.q-my-md.q-mx-lg(
         label="Save"
         color="primary"
         no-caps

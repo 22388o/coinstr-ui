@@ -2,30 +2,32 @@
 q-item(test data-testid="userItem")
   q-item-section(top avatar)
     q-img.img(v-if="isValidPicture" :src="_user.picture" width="50px" height="50px")
-    q-avatar.img(v-else color="secondary" text-color="white" font-size="15px" size="50px") User
+    q-avatar.img(v-else color="primary" text-color="white" font-size="15px" size="50px") User
   q-item-section(top no-wrap)
       q-item-label(lines="5")
         .row.q-gutter-xs
-          .text-weight-bold {{ _user.name || _user.displayName }}
+          .text-weight-bold.text-white {{ _user.name || _user.displayName }}
           q-icon(
             v-if="_user.nip05"
             name="verified"
             color="pink"
             size="1rem"
           )
-            q-tooltip NIP05 verified
-          q-item-label(v-if="_user.nip05") {{ getNip05 }}
+            q-tooltip.bg-primary NIP05 verified
+          q-item-label.text-white(v-if="_user.nip05") {{ getNip05 }}
       q-item-label(lines="2")
-        .npub.cursor-pointer(
+        .text-white.npub.cursor-pointer(
           :class="{'q-mt-xs': !_user.name && !_user.displayName}"
           @click="copyTextToClipboard(getNpub.raw)"
         )
           //- span.text-overline.text-weight-bolder npub
           span.text-body2 {{ getNpub.display }}
   q-item-section(v-if="interactive")
-    q-btn(
+    q-btn.btn--rounded(
       :label="policyButtonLabel"
       no-caps
+      outline
+      color="primary"
       @click="updateToPolicy"
       data-testid="interactWithPolicyBtn"
     )

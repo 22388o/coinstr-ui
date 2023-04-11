@@ -1,20 +1,17 @@
 <template lang="pug">
-q-layout.containerLayout(container view="hHh lpR fFf")
+q-layout.containerLayout.bg-secondary(container view="hHh lpR fFf")
     q-header
-      q-toolbar
-        .row#brand.items-center
+      q-toolbar.bg-secondary
+        .row.items-center
           q-img.q-ml-md.q-my-xs(
             src="/images/coinstr-logo.png"
             style="height: 50px; width: 50px"
           )
           .col.q-ml-sm
-            .text-dark.text-bold Coinstr
-            .text-dark Bitcoin multi-custody signature orchestation
+            .text-grey-white.text-bold Coinstr
+            .text-grey-dark Bitcoin multi-custody signature orchestation
         q-toolbar-title
-          //- q-item
-          //-   q-item-section
-          //-     q-item-label Policies
-        q-btn.bg-nostr(
+        q-btn.btn--rounded.bg-nostr(
           v-if="!isLoggedIn"
           color="nostr"
           @click="() => dialog = true"
