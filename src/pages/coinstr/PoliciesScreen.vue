@@ -3,7 +3,7 @@
   .row
     .col-8
       #template
-        .text-body2.text-bold Policy creator:
+        .text-body2.text-bold.text-grey-dark Policy creator:
         coinstr-blockly(
           ref="blocklyRef"
           @onChangedPolicy="validatePolicy"
@@ -12,33 +12,36 @@
         )
       .row.q-mt-sm
         .box.col.q-pr-sm
-          .text-body2.text-bold Policy code:
-          .text-body2.text-weight-light {{ policy }}
+          .text-body2.text-bold.text-grey-dark Policy code:
+          .text-body2.text-weight-light.text-grey-dark {{ policy }}
         .row.justify-end.q-gutter-x-sm(v-if="isLoggedInNostr")
-          q-btn(
+          q-btn.btn--rounded(
             label="Save policy"
             color="primary"
+            outline
             @click="showPolicyForm = true"
           )
-          q-btn(
+          q-btn.btn--rounded(
             label="Load policy"
-            color="secondary"
+            color="primary"
             @click="onLoadPolicy"
           )
     .col.q-pl-md
       template(v-if="isLoggedInNostr")
-        .text-body2.text-bold Contacts:
-        q-input.q-mb-sm(
+        .text-body2.text-bold.text-grey-dark Contacts:
+        q-input.c-input.c-input-bg.q-mb-sm(
           placeholder="Search"
           dense
           v-model="searchContacts"
           debounce="100"
           clearable
           clear-icon="close"
+          outlined
+          color="primary"
         )
         users-list.list(v-model="contacts" :loading="contacts === undefined" :search="searchContacts")
       template(v-else)
-        .text-body2.text-center.q-mt-md Please log in with your NOSTR account to see your contacts and add them to Policy.
+        .text-body2.text-center.q-mt-md.text-grey-dark Please log in with your NOSTR account to see your contacts and add them to Policy.
   q-dialog(v-model="showPolicyForm")
     policy-form(
       @onSubmit="onSavePolicy"
