@@ -19,6 +19,7 @@
             label="Save policy"
             color="primary"
             outline
+            :disable="isValidPolicy"
             @click="showPolicyForm = true"
           )
           q-btn.btn--rounded(
@@ -200,7 +201,12 @@ async function loadContacts () {
   }
 }
 
+const isValidPolicy = ref(false)
 function validatePolicy (code) {
+  if (policiesArray.data && policiesArray.data.length > 0) {
+    const policy = policiesArray.data.find(policy => policy?.uiMetadata?.policyCode === code)
+    isValidPolicy.value = !!policy
+  }
   policy.value = code
 }
 
@@ -366,6 +372,7 @@ async function loadPolicy (policy) {
     hideLoading()
   }
 }
+
 // --
 </script>
 
