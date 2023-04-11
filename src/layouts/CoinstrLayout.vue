@@ -95,7 +95,6 @@ const onLoginNostr = async ({ type, relays, address }) => {
     setNostrAccount({ hex: pubkey, npub: npubKey })
 
     const numberOfRelays = getRelays()
-    showNotification({ message: `Connected to ${numberOfRelays.length} relays`, color: 'green' })
   } catch (error) {
     handlerError(error)
   } finally {
